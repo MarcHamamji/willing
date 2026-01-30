@@ -1,8 +1,0 @@
-{
-  "dependencies": {
-    "morgan": "^1.10.1"
-  },
-  "devDependencies": {
-    "@types/morgan": "^1.9.10"
-  }
-}
