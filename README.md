@@ -31,5 +31,5 @@ npm start
 ### Client
 ```sh
 cd client
-npm run dev
+npm start
 ```
