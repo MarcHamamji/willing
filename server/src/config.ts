@@ -16,6 +16,8 @@ const schema = zod.object({
   NODE_ENV: zod.enum(['development', 'production']).default('development'),
   HOST: zod.string().nonempty(),
   SERVER_PORT: zod.string().regex(/[0-9]+/).nonempty().transform(s => Number(s)),
+
+  JWT_SECRET: zod.string().nonempty(),
 });
 
 const config = schema.parse(process.env);
