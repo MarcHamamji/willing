@@ -3,7 +3,7 @@ import { Kysely } from 'kysely';
 export async function up(db: Kysely<any>): Promise<void> {
   await db.schema
     .alterTable('admin_account')
-    .addColumn('password', 'varchar(256)', col => col.notNull())
+    .addColumn('password', 'varchar(255)', col => col.notNull())
     .execute();
 
   await db.schema
