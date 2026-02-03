@@ -4,7 +4,6 @@ import { dirname } from 'path';
 import { promises as fs } from 'fs';
 import {
   Migrator,
-  FileMigrationProvider,
   MigrationProvider,
   Migration,
 } from 'kysely';

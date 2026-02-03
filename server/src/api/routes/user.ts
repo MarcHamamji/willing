@@ -4,7 +4,6 @@ import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import zod from 'zod';
 import config from '../../config.js';
-import { authorizeOnly } from '../authorization.js';
 
 const userRouter = Router();
 

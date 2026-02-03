@@ -1,6 +1,6 @@
 import { Kysely } from 'kysely';
 
-export async function up(db: Kysely<any>): Promise<void> {
+export async function up(db: Kysely<unknown>): Promise<void> {
   await db.schema
     .alterTable('admin_account')
     .addColumn('password', 'varchar(256)', col => col.notNull())
@@ -22,7 +22,7 @@ export async function up(db: Kysely<any>): Promise<void> {
     .execute();
 }
 
-export async function down(db: Kysely<any>): Promise<void> {
+export async function down(db: Kysely<unknown>): Promise<void> {
   await db.schema
     .alterTable('organization_account')
     .addUniqueConstraint('organization_account_password_key', ['password'])
