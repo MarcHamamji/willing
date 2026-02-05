@@ -19,7 +19,7 @@ function AdminPageInner() {
 
   return (
     <main>
-      <div className="navbar bg-base-100 shadow-sm">
+      <div className="navbar bg-base-100 shadow-md">
         <div className="navbar-start">
           <a className="btn btn-ghost text-xl" href="/">
             <img src="/willing.svg" className="h-6" />

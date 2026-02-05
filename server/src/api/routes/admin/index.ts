@@ -70,7 +70,7 @@ adminRouter.get('/getOrganizationRequests', async (req, res) => {
 
 adminRouter.post('/reviewOrganizationRequest', async (req, res, next) => {
   const { requestId, accepted, reason } = zod.object({
-    requestId: zod.string().transform(s => Number(s)),
+    requestId: zod.number(),
     accepted: zod.boolean(),
     reason: zod.string().nullable(),
   }).parse(req.body);
@@ -86,23 +86,49 @@ adminRouter.post('/reviewOrganizationRequest', async (req, res, next) => {
     next(new Error('Organization request with id ' + requestId + ' not found.'));
     return;
   }
-  try {
-    if (accepted) {
-      await sendOrganizationAcceptanceEmail(organizationRequest, reason);
-    } else {
-      await sendOrganizationRejectionEmail(organizationRequest, reason);
-    }
-  } catch (error: unknown) {
-    next(error);
+
+  if (!accepted) {
+    sendOrganizationRejectionEmail(organizationRequest, reason);
+    await database
+      .deleteFrom('organization_request')
+      .where('id', '=', requestId)
+      .execute();
+    res.json({});
     return;
   }
 
-  await database
-    .deleteFrom('organization_request')
-    .where('id', '=', requestId)
-    .execute();
+  const password = Math.random().toString(36).slice(-8);
 
-  res.json({});
+  const insertedOrganization = await database.transaction().execute(async (trx) => {
+    await trx
+      .deleteFrom('organization_request')
+      .where('id', '=', requestId)
+      .execute();
+
+    return await trx
+      .insertInto('organization_account')
+      .values({
+        name: organizationRequest.name,
+        email: organizationRequest.email,
+        phone_number: organizationRequest.phone_number,
+        url: organizationRequest.url,
+        latitude: Number(organizationRequest.latitude),
+        longitude: Number(organizationRequest.longitude),
+        location_name: organizationRequest.location_name,
+        password: await bcrypt.hash(password, 10),
+      })
+      .returningAll()
+      .executeTakeFirst();
+  });
+
+  await sendOrganizationAcceptanceEmail(organizationRequest, password);
+
+  // @ts-expect-error: Do not return the password
+  delete insertedOrganization.password;
+
+  res.json({
+    organization: insertedOrganization,
+  });
 });
 
 export default adminRouter;
