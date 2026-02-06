@@ -1,5 +1,5 @@
 import { useCallback, useState, type ChangeEvent, type SubmitEvent } from 'react';
-import requestServer from '../requestServer';
+import requestServer from '../../requestServer';
 
 type OrgForm = {
   name: string;

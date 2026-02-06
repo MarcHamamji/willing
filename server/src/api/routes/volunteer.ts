@@ -4,10 +4,10 @@ import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import { z } from 'zod';
 import config from '../../config.js';
+import { authorizeOnly } from '../authorization.js';
 
 const volunteerRouter = Router();
 
-// Zod schema for volunteer creation
 const createVolunteerSchema = z.object({
   first_name: z.string().min(1, 'First name is required'),
   last_name: z.string().min(1, 'Last name is required'),
@@ -26,10 +26,8 @@ const createVolunteerSchema = z.object({
 });
 
 volunteerRouter.post('/create', async (req, res) => {
-  // Parse and validate request body
   const body = createVolunteerSchema.parse(req.body);
 
-  // Check if email already exists
   const existingVolunteer = await database
     .selectFrom('volunteer_account')
     .select('id')
@@ -38,13 +36,11 @@ volunteerRouter.post('/create', async (req, res) => {
 
   if (existingVolunteer) {
     res.status(409);
-    throw new Error ('Account already exists, log in or use another email');
+    throw new Error('Account already exists, log in or use another email');
   }
 
-  // Hash the password
   const hashedPassword = await bcrypt.hash(body.password, 10);
 
-  // Insert volunteer into the database
   const newVolunteer = await database
     .insertInto('volunteer_account')
     .values({
@@ -63,7 +59,6 @@ volunteerRouter.post('/create', async (req, res) => {
     throw new Error('Failed to create volunteer');
   }
 
-  // Generate JWT
   const token = jwt.sign(
     { id: newVolunteer.id, role: 'volunteer' },
     config.JWT_SECRET,
@@ -72,6 +67,20 @@ volunteerRouter.post('/create', async (req, res) => {
   // @ts-expect-error: do not return the password
   delete newVolunteer.password;
   res.status(201).json({ volunteer: newVolunteer, token });
+});
+
+volunteerRouter.use(authorizeOnly('volunteer'));
+
+volunteerRouter.get('/me', async (req, res) => {
+  const volunteer = await database
+    .selectFrom('volunteer_account')
+    .selectAll()
+    .where('id', '=', req.userJWT!.id)
+    .executeTakeFirstOrThrow();
+
+  // @ts-expect-error: do not return the password
+  delete volunteer.password;
+  res.json({ volunteer });
 });
 
 export default volunteerRouter;
