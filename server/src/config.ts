@@ -18,6 +18,7 @@ const schema = zod.object({
   SERVER_PORT: zod.string().regex(/[0-9]+/).nonempty().transform(s => Number(s)),
 
   JWT_SECRET: zod.string().nonempty(),
+  CLIENT_URL: zod.url(),
 });
 
 const config = schema.parse(process.env);

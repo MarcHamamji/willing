@@ -4,11 +4,17 @@ import morgan from 'morgan';
 import config from './config.js';
 import api from './api/index.js';
 import { ZodError } from 'zod';
+import cors from 'cors';
 
 const app = express();
 
 app.use(morgan('dev'));
 app.use(express.json());
+
+app.use(cors({
+  origin: config.CLIENT_URL,
+  credentials: true,
+}));
 
 app.use(api);
 
