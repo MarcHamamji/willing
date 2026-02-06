@@ -9,6 +9,7 @@
   "scripts": {
     "start": "tsc && node dist/index.js",
     "migrate": "tsc && node dist/db/migrate.js",
+    "create-admin": "tsc && node dist/scripts/create-admin.js",
     "lint": "eslint . --fix"
   },
   "devDependencies": {

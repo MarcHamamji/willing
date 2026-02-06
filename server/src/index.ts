@@ -3,6 +3,7 @@ import morgan from 'morgan';
 
 import config from './config.js';
 import api from './api/index.js';
+import { ZodError } from 'zod';
 
 const app = express();
 
@@ -21,7 +22,11 @@ app.use((req, res, next) => {
 // Error handler
 app.use(((err, req, res, _next) => {
   if (res.statusCode === 200) {
-    res.status(500);
+    if (err instanceof ZodError) {
+      res.status(400);
+    } else {
+      res.status(500);
+    }
   }
 
   res.json({

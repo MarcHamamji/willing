@@ -1,25 +1,24 @@
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
-import { createBrowserRouter, RouterProvider } from 'react-router-dom';
 
 import HomePage from './pages/HomePage';
-import AdminPage from './pages/AdminPage';
+import AdminPage from './pages/admin/AdminPage';
 
 import './index.css';
-
-const router = createBrowserRouter([
-  {
-    path: '/',
-    element: <HomePage />,
-  },
-  {
-    path: '/admin',
-    element: <AdminPage />,
-  },
-]);
+import { BrowserRouter, Route, Routes } from 'react-router';
+import AdminHome from './pages/admin/AdminHome';
+import AdminLogin from './pages/admin/AdminLogin';
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <RouterProvider router={router} />
+    <BrowserRouter>
+      <Routes>
+        <Route index element={<HomePage />} />
+        <Route path="admin" element={<AdminPage />}>
+          <Route index element={<AdminHome />} />
+          <Route path="login" element={<AdminLogin />} />
+        </Route>
+      </Routes>
+    </BrowserRouter>
   </StrictMode>,
 );

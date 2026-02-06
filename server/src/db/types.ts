@@ -1,6 +1,8 @@
 import {
   Generated,
+  Insertable,
   Selectable,
+  Updateable,
 } from 'kysely';
 
 export interface Database {
@@ -19,6 +21,10 @@ export interface VolunteerAccountTable {
   date_of_birth: string;
   gender: 'male' | 'female' | 'other';
 }
+export type VolunteerAccount = Selectable<VolunteerAccountTable>;
+export type NewVolunteerAccount = Insertable<VolunteerAccountTable>;
+export type VolunteerAccountUpdate = Updateable<VolunteerAccountTable>;
+export type VolunteerAccountWithoutPassword = Omit<VolunteerAccount, 'password'>;
 
 export interface OrganizationRequestTable {
   id: Generated<number>;
@@ -31,6 +37,8 @@ export interface OrganizationRequestTable {
   location_name: string;
 }
 export type OrganizationRequest = Selectable<OrganizationRequestTable>;
+export type NewOrganizationRequest = Insertable<OrganizationRequestTable>;
+export type OrganizationRequestUpdate = Updateable<OrganizationRequestTable>;
 
 export interface OrganizationAccountTable {
   id: Generated<number>;
@@ -44,6 +52,11 @@ export interface OrganizationAccountTable {
   location_name: string;
 }
 
+export type OrganizationAccount = Selectable<OrganizationAccountTable>;
+export type NewOrganizationAccount = Insertable<OrganizationAccountTable>;
+export type OrganizationAccountUpdate = Updateable<OrganizationAccountTable>;
+export type OrganizationAccountWithoutPassword = Omit<OrganizationAccount, 'password'>;
+
 export interface AdminAccountTable {
   id: Generated<number>;
   first_name: string;
@@ -51,3 +64,7 @@ export interface AdminAccountTable {
   email: string;
   password: string;
 }
+export type AdminAccount = Selectable<AdminAccountTable>;
+export type NewAdminAccount = Selectable<AdminAccountTable>;
+export type AdminAccountUpdate = Selectable<AdminAccountTable>;
+export type AdminAccountWithoutPassword = Omit<AdminAccount, 'password'>;
