@@ -8,7 +8,6 @@ function VolunteerPageInner() {
   const { volunteer, logout, refreshVolunteer } = useContext(VolunteerContext);
 
   useEffect(() => {
-    // Let registration page and login page be public
     if (location.pathname === '/volunteer/create') return;
 
     const jwt = localStorage.getItem('jwt');
@@ -27,7 +26,6 @@ function VolunteerPageInner() {
 
   return (
     <main className="h-screen flex flex-col">
-      {/* Navbar */}
       <div className="navbar bg-base-100 shadow-md">
         <div className="navbar-start">
           <a className="btn btn-ghost text-xl" href="/">
@@ -48,8 +46,6 @@ function VolunteerPageInner() {
           </div>
         </div>
       </div>
-
-      {/* Outlet for nested routes */}
       <Outlet />
     </main>
   );

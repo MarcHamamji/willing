@@ -3,7 +3,6 @@ import { Outlet } from 'react-router';
 function OrganizationPage() {
   return (
     <main className="h-screen flex flex-col">
-      {}
       <div className="navbar bg-base-100 shadow-md">
         <div className="navbar-start">
           <a className="btn btn-ghost text-xl" href="/">
@@ -15,7 +14,6 @@ function OrganizationPage() {
           {}
         </div>
       </div>
-      {}
       <Outlet />
     </main>
   );
