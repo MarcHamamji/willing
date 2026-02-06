@@ -12,7 +12,7 @@ function VolunteerPageInner() {
 
     const jwt = localStorage.getItem('jwt');
     if (!jwt) {
-      navigate('/user/login');
+      navigate('/login');
     } else {
       refreshVolunteer();
     }
@@ -21,7 +21,7 @@ function VolunteerPageInner() {
   const handleLogout = useCallback(() => {
     (document.activeElement as HTMLElement)?.blur();
     logout();
-    navigate('/user/login');
+    navigate('/login');
   }, [logout, navigate]);
 
   return (
