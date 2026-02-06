@@ -47,7 +47,7 @@ function HomePage() {
         </div>
       </main>
 
-      <footer className="footer sm:footer-horizontal p-10 bg-base-300 text-neutral-content mt-20">
+      <footer className="footer sm:footer-horizontal p-10 bg-base-300 mt-20">
         <nav>
           <h6 className="footer-title">Willing</h6>
           <p className="max-w-xs opacity-70">
