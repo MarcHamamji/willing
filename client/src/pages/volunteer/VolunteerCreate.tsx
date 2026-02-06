@@ -80,6 +80,7 @@ export default function VolunteerCreate() {
             <input
               className="input w-full"
               value={firstName}
+              placeholder='First name'
               onChange={(e: ChangeEvent<HTMLInputElement>) =>
                 setFirstName(e.target.value)}
             />
@@ -88,6 +89,7 @@ export default function VolunteerCreate() {
             <input
               className="input w-full"
               value={lastName}
+              placeholder='Last name'
               onChange={(e: ChangeEvent<HTMLInputElement>) =>
                 setLastName(e.target.value)}
             />
@@ -96,6 +98,7 @@ export default function VolunteerCreate() {
             <input
               type="email"
               className="input w-full"
+              placeholder='Email'
               value={email}
               onChange={(e: ChangeEvent<HTMLInputElement>) =>
                 setEmail(e.target.value)}
@@ -105,6 +108,7 @@ export default function VolunteerCreate() {
             <input
               type="password"
               className="input w-full"
+              placeholder='Password'
               value={password}
               onChange={(e: ChangeEvent<HTMLInputElement>) =>
                 setPassword(e.target.value)}
