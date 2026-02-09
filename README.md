@@ -1,11 +1,14 @@
 # <img src="logo/export.png" alt="Willing Logo" width="30"/> Willing
 
+A platform dedicated to bridging the gap between passionate volunteers and organizations in need. Built for community impact.
+
 ## Setup
 
 ### Server
 ```sh
 cd server
 npm install
+npm run migrate
 ```
 
 ### Client
@@ -33,7 +36,6 @@ npm start
 cd client
 npm start
 ```
----
 
 ## Tools and Technologies
 
@@ -59,8 +61,6 @@ This project is built using a modern frontend and backend stack with TypeScript,
 - **Tailwind CSS / DaisyUI 🎨**  
   - Faster styling, consistent UI, and less custom CSS.
 
----
-
 ## Backend
 
 - **TypeScript 🔷**  
@@ -82,8 +82,6 @@ This project is built using a modern frontend and backend stack with TypeScript,
   - Used to validate and parse data at runtime.  
   - Ensures user inputs and API requests match expected schemas before reaching business logic.
 
----
-
 ## Database
 
 - **Kysely 📘**  
@@ -96,8 +94,6 @@ This project is built using a modern frontend and backend stack with TypeScript,
 - **Adminer 🕵️**  
   - Web-based database management tool for inspecting, querying, and managing PostgreSQL during development.
 
----
-
 ## Security
 
 - **JWT (JSON Web Token) 🔑**  
@@ -107,8 +103,6 @@ This project is built using a modern frontend and backend stack with TypeScript,
 - **Bcrypt 🛡️**  
   - Hashes passwords before storing them in the database.  
   - Makes it much harder for attackers to retrieve plain-text passwords.
-
----
 
 ## Other Tools
 
