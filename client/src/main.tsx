@@ -9,6 +9,7 @@ import OrganizationHome from './pages/organization/OrganizationHome';
 import OrganizationPage from './pages/organization/OrganizationPage';
 import VolunteerCreate from './pages/volunteer/VolunteerCreate';
 import VolunteerPage from './pages/volunteer/VolunteerPage';
+import VolunteerProfile from './pages/volunteer/VolunteerProfile';
 
 import './index.css';
 import { BrowserRouter, Route, Routes } from 'react-router';
@@ -35,6 +36,7 @@ createRoot(document.getElementById('root')!).render(
         <Route path="volunteer" element={<VolunteerPage />}>
           <Route index element={<VolunteerHome />}></Route>
           <Route path="create" element={<VolunteerCreate />} />
+          <Route path="profile" element={<VolunteerProfile />} />
         </Route>
       </Routes>
     </BrowserRouter>
