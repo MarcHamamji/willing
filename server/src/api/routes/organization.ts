@@ -28,8 +28,8 @@ orgRouter.post('/request', async (req, res) => {
       location_name: body.location_name,
 
       // FORCE 0,0 for now
-      latitude: '0',
-      longitude: '0',
+      latitude: 0,
+      longitude: 0,
     })
     .returningAll().executeTakeFirst();
 
