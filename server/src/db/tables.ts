@@ -13,9 +13,6 @@ export interface Database {
   organization_posting: OrganizationPostingTable;
   posting_skill: PostingSkillTable;
   volunteer_skill: VolunteerSkillTable;
-  organization_password_reset: OrganizationPasswordResetTable;
-  volunteer_password_reset: VolunteerPasswordResetTable;
-  admin_password_reset: AdminPasswordResetTable;
 }
 
 export const volunteerAccountSchema = zod.object({
@@ -34,7 +31,6 @@ export const volunteerAccountSchema = zod.object({
     .min(1, 'Date of birth is required')
     .refine(str => !isNaN(Date.parse(str)), { message: 'Invalid date format' }),
   gender: zod.enum(['male', 'female', 'other'], 'Gender should be \'female\', \'male\', or \'other\' '),
-  phone_number: zod.e164('Phone number is invalid'),
   description: zod.string().optional(),
   skills: zod.string().optional(),
 });
@@ -148,8 +144,8 @@ export const OrganizationPostingSchema = zod.object({
     .max(180, { message: 'Longitude must be <= 180' })
     .optional(),
   max_volunteers: zod.number().optional(),
-  start_time: zod.date({ message: 'Start time is required and must be a valid date' }),
-  end_time: zod.date({ message: 'End time is required and must be a valid date' }).optional(),
+  start_timestamp: zod.date({ message: 'Start time is required and must be a valid date' }),
+  end_timestamp: zod.date({ message: 'End time must be a valid date' }).optional(),
   minimum_age: zod.number().optional(),
   skills: zod.string().optional(),
   status: zod.boolean().default(true),
@@ -178,30 +174,3 @@ export const VolunteerSkillSchema = zod.object({
 export type VolunteerSkill = zod.infer<typeof VolunteerSkillSchema>;
 
 export type VolunteerSkillTable = WithGeneratedID<VolunteerSkill>;
-
-export const OrganizationPasswordResetSchema = zod.object({
-  organization_id: zod.number().min(1, 'Organization ID is required'),
-  token: zod.string().min(1, 'Token is required'),
-});
-
-export type OrganizationPasswordReset = zod.infer<typeof OrganizationPasswordResetSchema>;
-
-export type OrganizationPasswordResetTable = OrganizationPasswordReset;
-
-export const VolunteerPasswordResetSchema = zod.object({
-  volunteer_id: zod.number().min(1, 'Volunteer ID is required'),
-  token: zod.string().min(1, 'Token is required'),
-});
-
-export type VolunteerPasswordReset = zod.infer<typeof VolunteerPasswordResetSchema>;
-
-export type VolunteerPasswordResetTable = VolunteerPasswordReset;
-
-export const AdminPasswordResetSchema = zod.object({
-  admin_id: zod.number().min(1, 'Admin ID is required'),
-  token: zod.string().min(1, 'Token is required'),
-});
-
-export type AdminPasswordReset = zod.infer<typeof AdminPasswordResetSchema>;
-
-export type AdminPasswordResetTable = AdminPasswordReset;
