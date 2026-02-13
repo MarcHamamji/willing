@@ -1,6 +1,6 @@
 import { Pool } from 'pg';
 import { Kysely, PostgresDialect } from 'kysely';
-import { Database } from './types.js';
+import { Database } from './tables.js';
 
 import config from '../config.js';
 

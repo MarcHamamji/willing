@@ -3,7 +3,6 @@ import requestServer from '../requestServer';
 import { useNavigate } from 'react-router';
 
 function UserLoginPage() {
-
   const navigate = useNavigate();
 
   const [email, setEmail] = useState<string>('');
@@ -12,32 +11,28 @@ function UserLoginPage() {
   const submission = async (e: React.SubmitEvent<HTMLFormElement>) => {
     e.preventDefault();
 
-  try {
-
-    const response = await requestServer<{
-          token: string;
-          role: 'organization' | 'volunteer';
-        }>('/user/login', {
-          method: 'POST',
-          body: JSON.stringify({email, password}),
-          headers: {
-            'Content-Type': 'application/json',
-          },
-    });
+    try {
+      const response = await requestServer<{
+        token: string;
+        role: 'organization' | 'volunteer';
+      }>('/user/login', {
+        method: 'POST',
+        body: JSON.stringify({ email, password }),
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
 
       localStorage.setItem('jwt', response.token);
 
-      if(response.role === 'organization'){
+      if (response.role === 'organization') {
         navigate('/organization');
-      }
-      else  
+      } else
         navigate('/volunteer');
-  
-  }
-  catch (error) {
-    alert('Login failed: ' + error);
-  }
-}
+    } catch (error) {
+      alert('Login failed: ' + error);
+    }
+  };
 
   return (
 
@@ -49,8 +44,8 @@ function UserLoginPage() {
             Willing
           </a>
         </div>
-      </div>    
-  
+      </div>
+
       <div className="flex-grow hero bg-base-200">
         <div className="hero-content flex-col lg:flex-row-reverse gap-8">
           <div className="text-center lg:text-left">
@@ -73,8 +68,7 @@ function UserLoginPage() {
                   placeholder="Email"
                   value={email}
                   onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                    setEmail(e.currentTarget.value)
-                  }
+                    setEmail(e.currentTarget.value)}
                 />
 
                 <label className="label">Password</label>
@@ -84,8 +78,7 @@ function UserLoginPage() {
                   placeholder="Password"
                   value={password}
                   onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                    setPassword(e.currentTarget.value)
-                  }
+                    setPassword(e.currentTarget.value)}
                 />
 
                 <button
@@ -99,7 +92,7 @@ function UserLoginPage() {
             </form>
           </div>
         </div>
-      </div> 
+      </div>
     </main>
   );
 }

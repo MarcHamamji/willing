@@ -4,14 +4,12 @@ import bcrypt from 'bcrypt';
 import * as jose from 'jose';
 import zod from 'zod';
 import config from '../../config.js';
+import { LoginInfoSchema } from '../../types.js';
 
 const userRouter = Router();
 
 userRouter.post('/login', async (req, res) => {
-  const body = zod.object({
-    email: zod.email(),
-    password: zod.string(),
-  }).parse(req.body);
+  const body = LoginInfoSchema.parse(req.body);
 
   let organizationAccount;
   let volunteerAccount;

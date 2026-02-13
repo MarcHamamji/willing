@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import requestServer from '../../requestServer';
-import type { OrganizationRequest } from '../../../../server/src/db/types';
+import type { OrganizationRequest } from '../../../../server/src/db/tables';
 import OrganizationRequestReviewCard from './components/OrganizationRequestReviewCard';
 
 function AdminHome() {

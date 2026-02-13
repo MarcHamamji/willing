@@ -1,5 +1,5 @@
 import { createContext, useState, useCallback, useEffect, type ReactNode } from 'react';
-import type { VolunteerAccountWithoutPassword } from '../../../../server/src/db/types';
+import type { VolunteerAccountWithoutPassword } from '../../../../server/src/db/tables';
 import requestServer from '../../requestServer';
 
 type VolunteerContextType = {

@@ -5,15 +5,13 @@ import bcrypt from 'bcrypt';
 import database from '../../../db/index.js';
 import { authorizeOnly } from '../../authorization.js';
 import config from '../../../config.js';
+import { LoginInfoSchema } from '../../../types.js';
 import { sendOrganizationAcceptanceEmail, sendOrganizationRejectionEmail } from './emails.js';
 
 const adminRouter = Router();
 
 adminRouter.post('/login', async (req, res) => {
-  const body = zod.object({
-    email: zod.email(),
-    password: zod.string(),
-  }).parse(req.body);
+  const body = LoginInfoSchema.parse(req.body);
 
   const account = await database
     .selectFrom('admin_account')

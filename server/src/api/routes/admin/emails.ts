@@ -1,6 +1,6 @@
 import config from '../../../config.js';
 import db from '../../../db/index.js';
-import { OrganizationRequest } from '../../../db/types.js';
+import { OrganizationRequest } from '../../../db/tables.js';
 import { sendEmail } from '../../../SMTP/mailer.js';
 
 export async function sendOrganizationAcceptanceEmail(

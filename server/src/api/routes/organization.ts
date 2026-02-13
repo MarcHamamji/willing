@@ -1,22 +1,12 @@
 import { Router } from 'express';
-import zod from 'zod';
 import database from '../../db/index.js';
 import { sendAdminOrganizationRequestEmail } from './admin/emails.js';
+import { newOrganizationRequestSchema } from '../../db/tables.js';
 
 const orgRouter = Router();
 
-const orgRequestSchema = zod.object({
-  name: zod.string().min(1),
-  email: zod.email(),
-  phone_number: zod.string().optional().default(''),
-  url: zod.string().optional().default(''),
-  location_name: zod.string().min(1),
-  latitude: zod.number().optional(),
-  longitude: zod.number().optional(),
-});
-
 orgRouter.post('/request', async (req, res) => {
-  const body = orgRequestSchema.parse(req.body);
+  const body = newOrganizationRequestSchema.parse(req.body);
 
   const organization = await database
     .insertInto('organization_request')

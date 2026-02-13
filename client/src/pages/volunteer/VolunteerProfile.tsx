@@ -27,15 +27,17 @@ function VolunteerProfile() {
               <div className="card-body">
                 <div className="flex items-center gap-4">
                   <div className="avatar">
-                    {avatarUrl ? (
-                      <div className="rounded-full w-20">
-                        <img src={avatarUrl} alt={`${volunteerName} avatar`} />
-                      </div>
-                    ) : (
-                      <div className="bg-primary text-primary-content rounded-full w-20 flex items-center justify-center">
-                        <span className="text-2xl">{initials || 'V'}</span>
-                      </div>
-                    )}
+                    {avatarUrl
+                      ? (
+                          <div className="rounded-full w-20">
+                            <img src={avatarUrl} alt={`${volunteerName} avatar`} />
+                          </div>
+                        )
+                      : (
+                          <div className="bg-primary text-primary-content rounded-full w-20 flex items-center justify-center">
+                            <span className="text-2xl">{initials || 'V'}</span>
+                          </div>
+                        )}
                   </div>
                   <div>
                     <h4 className="text-xl font-bold">{volunteerName}</h4>
