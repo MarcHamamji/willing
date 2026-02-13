@@ -1,4 +1,5 @@
 import { JWTPayload } from 'jose';
+
 import { UserJWT } from '../types.js';
 
 type UserJWTPayload = JWTPayload & UserJWT;

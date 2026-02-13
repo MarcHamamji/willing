@@ -1,7 +1,8 @@
 import { useState, type ChangeEvent } from 'react';
 import { useNavigate } from 'react-router';
-import requestServer from '../../requestServer';
 import { z } from 'zod';
+
+import requestServer from '../../requestServer';
 
 // Frontend validation schema
 const volunteerSchema = z
@@ -18,8 +19,6 @@ const volunteerSchema = z
     message: 'Passwords do not match',
     path: ['confirmPassword'],
   });
-
-type VolunteerCreatePayload = Omit<z.infer<typeof volunteerSchema>, 'confirmPassword'>;
 
 export default function VolunteerCreate() {
   const navigate = useNavigate();

@@ -1,6 +1,7 @@
 import { Router } from 'express';
-import database from '../../db/index.js';
+
 import { sendAdminOrganizationRequestEmail } from './admin/emails.js';
+import database from '../../db/index.js';
 import { newOrganizationRequestSchema } from '../../db/tables.js';
 
 const orgRouter = Router();

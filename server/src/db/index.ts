@@ -1,7 +1,7 @@
-import { Pool } from 'pg';
 import { Kysely, PostgresDialect } from 'kysely';
-import { Database } from './tables.js';
+import { Pool } from 'pg';
 
+import { Database } from './tables.js';
 import config from '../config.js';
 
 const dialect = new PostgresDialect({

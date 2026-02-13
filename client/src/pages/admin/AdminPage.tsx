@@ -1,7 +1,9 @@
-import { Outlet, useLocation, useNavigate } from 'react-router';
-import { useCallback, useContext, useEffect } from 'react';
 import * as jose from 'jose';
+import { useCallback, useContext, useEffect } from 'react';
+import { Outlet, useLocation, useNavigate } from 'react-router';
+
 import AdminContext, { AdminProvider } from './AdminContext';
+
 import type { UserJWT } from '../../../../server/src/types';
 
 function AdminPageInner() {

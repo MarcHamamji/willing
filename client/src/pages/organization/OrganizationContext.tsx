@@ -1,6 +1,8 @@
 import { createContext, useState, useCallback, useEffect, type ReactNode } from 'react';
-import type { OrganizationAccountWithoutPassword } from '../../../../server/src/db/tables';
+
 import requestServer from '../../requestServer';
+
+import type { OrganizationAccountWithoutPassword } from '../../../../server/src/db/tables';
 
 type OrganizationContextType = {
   organization?: OrganizationAccountWithoutPassword;

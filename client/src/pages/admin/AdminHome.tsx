@@ -1,7 +1,9 @@
 import { useCallback, useEffect, useState } from 'react';
+
 import requestServer from '../../requestServer';
-import type { OrganizationRequest } from '../../../../server/src/db/tables';
 import OrganizationRequestReviewCard from './components/OrganizationRequestReviewCard';
+
+import type { OrganizationRequest } from '../../../../server/src/db/tables';
 
 function AdminHome() {
   const [organizationRequests, setOrganizationRequests] = useState<OrganizationRequest[]>([]);

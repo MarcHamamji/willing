@@ -1,9 +1,9 @@
-import { Router } from 'express';
-import database from '../../db/index.js';
 import bcrypt from 'bcrypt';
+import { Router } from 'express';
 import * as jose from 'jose';
-import zod from 'zod';
+
 import config from '../../config.js';
+import database from '../../db/index.js';
 import { LoginInfoSchema } from '../../types.js';
 
 const userRouter = Router();

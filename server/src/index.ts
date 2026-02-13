@@ -1,10 +1,10 @@
+import cors from 'cors';
 import express, { type ErrorRequestHandler } from 'express';
 import morgan from 'morgan';
-
-import config from './config.js';
-import api from './api/index.js';
 import { ZodError } from 'zod';
-import cors from 'cors';
+
+import api from './api/index.js';
+import config from './config.js';
 
 const app = express();
 

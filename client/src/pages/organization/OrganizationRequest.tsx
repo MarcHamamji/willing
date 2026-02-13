@@ -1,6 +1,26 @@
-import { useCallback, useEffect, useState, type ChangeEvent, type SubmitEvent } from 'react';
+import { DomEvent, divIcon } from 'leaflet';
+import { useCallback, useEffect, useRef, useState, type ChangeEvent, type SubmitEvent } from 'react';
+import { MapContainer, Marker, TileLayer, useMap, useMapEvents } from 'react-leaflet';
+
 import requestServer from '../../requestServer';
 import LocationPicker from '../../components/LocationPicker';
+
+const customIcon = divIcon({
+  className: 'custom-icon',
+  html: `
+    <div class="text-primary drop-shadow-md">
+      <svg 
+        viewBox="0 0 24 24" 
+        fill="currentColor" 
+        className="w-14 h-14" 
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z" />
+      </svg>
+    </div>`,
+  iconSize: [56, 56], // Slightly larger container (w-14 = 56px)
+  iconAnchor: [28, 56], // Anchored perfectly at the bottom center tip
+});
 
 type OrgForm = {
   name: string;
