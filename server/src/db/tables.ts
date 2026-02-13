@@ -10,6 +10,9 @@ export interface Database {
   organization_request: OrganizationRequestTable;
   organization_account: OrganizationAccountTable;
   admin_account: AdminAccountTable;
+  organization_posting: OrganizationPostingTable;
+  posting_skill: PostingSkillTable;
+  volunteer_skill: VolunteerSkillTable;
 }
 
 export const volunteerAccountSchema = zod.object({
@@ -28,6 +31,7 @@ export const volunteerAccountSchema = zod.object({
     .min(1, 'Date of birth is required')
     .refine(str => !isNaN(Date.parse(str)), { message: 'Invalid date format' }),
   gender: zod.enum(['male', 'female', 'other'], 'Gender should be \'female\', \'male\', or \'other\' '),
+  description: zod.string().optional(),
 });
 export type VolunteerAccount = zod.infer<typeof volunteerAccountSchema>;
 
@@ -122,3 +126,49 @@ export type NewAdminAccount = zod.infer<typeof newAdminAccountSchema>;
 
 export const adminAccountUpdate = adminAccountSchema.omit({ password: true });
 export type AdminAccountWithoutPassword = zod.infer<typeof adminAccountUpdate>;
+
+export const OrganizationPostingSchema = zod.object({
+  id: zod.number(),
+  organization_id: zod.number().min(1, 'Organization ID is required'),
+  title: zod.string().min(1, 'Title is required'),
+  description: zod.string().min(1, 'Description is required'),
+  latitude: zod
+    .number()
+    .min(-90, { message: 'Latitude must be >= -90' })
+    .max(90, { message: 'Latitude must be <= 90' })
+    .optional(),
+  longitude: zod
+    .number()
+    .min(-180, { message: 'Longitude must be >= -180' })
+    .max(180, { message: 'Longitude must be <= 180' })
+    .optional(),
+  max_volunteers: zod.number().optional(),
+  start_timestamp: zod.date({ message: 'Start time is required and must be a valid date' }),
+  end_timestamp: zod.date({ message: 'End time must be a valid date' }).optional(),
+  minimum_age: zod.number().optional(),
+  is_open: zod.boolean().default(true),
+});
+
+export type OrganizationPosting = zod.infer<typeof OrganizationPostingSchema>;
+
+export type OrganizationPostingTable = WithGeneratedID<OrganizationPosting>;
+
+export const PostingSkillSchema = zod.object({
+  id: zod.number(),
+  posting_id: zod.number().min(1, 'Posting ID is required'),
+  name: zod.string().min(1, 'Skill name is required'),
+});
+
+export type PostingSkill = zod.infer<typeof PostingSkillSchema>;
+
+export type PostingSkillTable = WithGeneratedID<PostingSkill>;
+
+export const VolunteerSkillSchema = zod.object({
+  id: zod.number(),
+  volunteer_id: zod.number().min(1, 'Volunteer ID is required'),
+  name: zod.string().min(1, 'Skill name is required'),
+});
+
+export type VolunteerSkill = zod.infer<typeof VolunteerSkillSchema>;
+
+export type VolunteerSkillTable = WithGeneratedID<VolunteerSkill>;
