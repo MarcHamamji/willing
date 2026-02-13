@@ -4,16 +4,22 @@ import requestServer from '../../requestServer';
 import { z } from 'zod';
 
 // Frontend validation schema
-const volunteerSchema = z.object({
-  first_name: z.string().min(1),
-  last_name: z.string().min(1),
-  email: z.email(),
-  password: z.string().min(6),
-  date_of_birth: z.string().min(1),
-  gender: z.enum(['male', 'female', 'other']),
-});
+const volunteerSchema = z
+  .object({
+    first_name: z.string().min(1),
+    last_name: z.string().min(1),
+    email: z.email(),
+    password: z.string().min(6),
+    confirmPassword: z.string().min(6),
+    date_of_birth: z.string().min(1),
+    gender: z.enum(['male', 'female', 'other']),
+  })
+  .refine(data => data.password === data.confirmPassword, {
+    message: 'Passwords do not match',
+    path: ['confirmPassword'],
+  });
 
-type VolunteerCreatePayload = z.infer<typeof volunteerSchema>;
+type VolunteerCreatePayload = Omit<z.infer<typeof volunteerSchema>, 'confirmPassword'>;
 
 export default function VolunteerCreate() {
   const navigate = useNavigate();
@@ -22,6 +28,7 @@ export default function VolunteerCreate() {
   const [lastName, setLastName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [dateOfBirth, setDateOfBirth] = useState('');
   const [gender, setGender] = useState<'male' | 'female' | 'other'>('male');
 
@@ -36,6 +43,7 @@ export default function VolunteerCreate() {
       last_name: lastName,
       email,
       password,
+      confirmPassword,
       date_of_birth: dateOfBirth,
       gender,
     });
@@ -45,7 +53,7 @@ export default function VolunteerCreate() {
       return;
     }
 
-    const volunteerData: VolunteerCreatePayload = parseResult.data;
+    const { confirmPassword: _, ...volunteerData } = parseResult.data;
 
     // TODO: rely on global error handler (no try/catch here)
     const response = await requestServer<{
@@ -114,6 +122,16 @@ export default function VolunteerCreate() {
                 setPassword(e.target.value)}
             />
 
+            <label className="label">Confirm Password</label>
+            <input
+              type="password"
+              className="input w-full"
+              placeholder="Confirm password"
+              value={confirmPassword}
+              onChange={(e: ChangeEvent<HTMLInputElement>) =>
+                setConfirmPassword(e.target.value)}
+            />
+
             <label className="label">Date of Birth</label>
             <input
               type="date"
@@ -135,10 +153,10 @@ export default function VolunteerCreate() {
               <option value="other">Other</option>
             </select>
 
-            <button 
+            <button
               className="btn btn-primary mt-4"
               type="submit"
-              disabled={!firstName || !lastName || !email || !password || !dateOfBirth || !gender}
+              disabled={!firstName || !lastName || !email || !password || !confirmPassword || !dateOfBirth || !gender}
             >
               Register
             </button>
