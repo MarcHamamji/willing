@@ -1,9 +1,10 @@
 import { Router } from 'express';
+
 import { setUserJWT } from './authorization.js';
 import adminRouter from './routes/admin/index.js';
+import orgRouter from './routes/organization.js';
 import userRouter from './routes/user.js';
 import volunteerRouter from './routes/volunteer.js';
-import orgRouter from './routes/organization.js';
 
 const api = Router();
 api.use(setUserJWT);

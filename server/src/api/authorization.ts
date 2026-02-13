@@ -1,5 +1,6 @@
 import { RequestHandler } from 'express';
 import * as jose from 'jose';
+
 import config from '../config.js';
 import { UserJWT } from '../types.js';
 

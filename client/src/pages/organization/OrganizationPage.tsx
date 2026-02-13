@@ -1,7 +1,9 @@
+import * as jose from 'jose';
 import { useCallback, useContext, useEffect } from 'react';
 import { Outlet, useLocation, useNavigate } from 'react-router';
-import * as jose from 'jose';
+
 import OrganizationContext from './OrganizationContext';
+
 import type { UserJWT } from '../../../../server/src/types';
 
 function OrganizationPage() {

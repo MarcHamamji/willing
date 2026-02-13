@@ -1,7 +1,8 @@
-import * as path from 'path';
-import { fileURLToPath, pathToFileURL } from 'url';
-import { dirname } from 'path';
 import { promises as fs } from 'fs';
+import * as path from 'path';
+import { dirname } from 'path';
+import { fileURLToPath, pathToFileURL } from 'url';
+
 import {
   Migrator,
   MigrationProvider,

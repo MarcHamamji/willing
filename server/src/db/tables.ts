@@ -1,5 +1,5 @@
-import zod from 'zod';
 import { Generated } from 'kysely';
+import zod from 'zod';
 
 type WithGeneratedID<T> = Omit <T, 'id'> & {
   id: Generated<number>;

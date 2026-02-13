@@ -1,13 +1,17 @@
 import js from '@eslint/js';
+import stylistic from '@stylistic/eslint-plugin';
+import { defineConfig, globalIgnores } from 'eslint/config';
+import { importX } from 'eslint-plugin-import-x';
 import globals from 'globals';
 import tseslint from 'typescript-eslint';
-import { defineConfig, globalIgnores } from 'eslint/config';
-import stylistic from '@stylistic/eslint-plugin';
 
 export default defineConfig([
   globalIgnores(['dist']),
   {
     files: ['**/*.{js,ts,tsx}'],
+    plugins: {
+      'import-x': importX,
+    },
     extends: [
       js.configs.recommended,
       tseslint.configs.recommended,
@@ -20,8 +24,23 @@ export default defineConfig([
         arrowParens: false,
         commaDangle: 'always-multiline',
       }),
+      'import-x/flat/recommended',
     ],
     rules: {
+      'import-x/order': ['error', {
+        'groups': [
+          'builtin',
+          'external',
+          'internal',
+          ['parent', 'sibling', 'index'],
+          'type',
+        ],
+        'newlines-between': 'always',
+        'alphabetize': { order: 'asc', caseInsensitive: true },
+      }],
+      'import-x/first': 'error',
+      'import-x/newline-after-import': 'error',
+      'import-x/no-duplicates': 'error',
       ['@typescript-eslint/no-unused-vars']: [
         'warn', {
           argsIgnorePattern: '^_',
@@ -33,6 +52,15 @@ export default defineConfig([
     },
     languageOptions: {
       globals: globals.node,
+    },
+    settings: {
+      'import-x/resolver': {
+        typescript: {
+          alwaysTryTypes: true,
+          project: './tsconfig.json',
+        },
+        node: true,
+      },
     },
   },
 ]);

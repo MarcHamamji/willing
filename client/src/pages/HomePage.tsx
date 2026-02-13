@@ -1,6 +1,7 @@
+import * as jose from 'jose';
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import * as jose from 'jose';
+
 import type { Role, UserJWT } from '../../../server/src/types';
 
 function HomePage() {

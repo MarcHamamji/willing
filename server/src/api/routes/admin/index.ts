@@ -1,12 +1,13 @@
-import { Router } from 'express';
-import zod from 'zod';
-import * as jose from 'jose';
 import bcrypt from 'bcrypt';
-import database from '../../../db/index.js';
-import { authorizeOnly } from '../../authorization.js';
-import config from '../../../config.js';
-import { LoginInfoSchema } from '../../../types.js';
+import { Router } from 'express';
+import * as jose from 'jose';
+import zod from 'zod';
+
 import { sendOrganizationAcceptanceEmail, sendOrganizationRejectionEmail } from './emails.js';
+import config from '../../../config.js';
+import database from '../../../db/index.js';
+import { LoginInfoSchema } from '../../../types.js';
+import { authorizeOnly } from '../../authorization.js';
 
 const adminRouter = Router();
 

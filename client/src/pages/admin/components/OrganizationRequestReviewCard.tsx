@@ -1,6 +1,8 @@
 import { useCallback, useState } from 'react';
-import type { OrganizationRequest } from '../../../../../server/src/db/types';
+
 import requestServer from '../../../requestServer';
+
+import type { OrganizationRequest } from '../../../../../server/src/db/types';
 
 function OrganizationRequestReviewCard({ request, refreshOrganizationRequests }: {
   request: OrganizationRequest;

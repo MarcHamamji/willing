@@ -1,7 +1,9 @@
-import { Outlet, useLocation, useNavigate } from 'react-router';
-import { useCallback, useContext, useEffect } from 'react';
 import * as jose from 'jose';
+import { useCallback, useContext, useEffect } from 'react';
+import { Outlet, useLocation, useNavigate } from 'react-router';
+
 import VolunteerContext, { VolunteerProvider } from './VolunteerContext';
+
 import type { UserJWT } from '../../../../server/src/types';
 
 function VolunteerPageInner() {
