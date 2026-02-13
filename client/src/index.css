@@ -73,3 +73,9 @@
   --depth: 1;
   --noise: 0;
 }
+
+.leaflet-control-attribution {
+  border-top-left-radius: 0.5rem;
+  padding: 4px 12px !important;
+  background: var(--color-base-100) !important; 
+}
