@@ -64,7 +64,7 @@ organizationRouter.post('/request', async (req, res) => {
 
 organizationRouter.use(authorizeOnly('organization'));
 
-organizationRouter.post('/postings', async (req, res) => {
+organizationRouter.post('/posting', async (req, res) => {
   const body = OrganizationPostingSchema.omit({ id: true, organization_id: true }).parse(req.body);
   const orgId = req.userJWT!.id;
 
@@ -91,17 +91,17 @@ organizationRouter.post('/postings', async (req, res) => {
   res.status(201).json(posting);
 });
 
-organizationRouter.get('/postings', async (req, res) => {
+organizationRouter.get('/posting', async (req, res) => {
   const orgId = req.userJWT!.id;
 
-  const postings = await database
+  const posting = await database
     .selectFrom('organization_posting')
     .selectAll()
     .where('organization_id', '=', orgId)
     .orderBy('start_timestamp', 'asc')
     .execute();
 
-  res.json({ postings });
+  res.json({ posting });
 });
 
 organizationRouter.get('/me', async (req, res) => {
