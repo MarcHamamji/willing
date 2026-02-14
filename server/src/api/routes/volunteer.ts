@@ -4,13 +4,13 @@ import * as jose from 'jose';
 
 import config from '../../config.js';
 import database from '../../db/index.js';
-import { volunteerAccountSchema } from '../../db/tables.js';
+import { newVolunteerAccountSchema } from '../../db/tables.js';
 import { authorizeOnly } from '../authorization.js';
 
 const volunteerRouter = Router();
 
 volunteerRouter.post('/create', async (req, res) => {
-  const body = volunteerAccountSchema.parse(req.body);
+  const body = newVolunteerAccountSchema.parse(req.body);
 
   const existingVolunteer = await database
     .selectFrom('volunteer_account')

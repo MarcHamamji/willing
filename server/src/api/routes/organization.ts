@@ -2,15 +2,15 @@ import { Router } from 'express';
 import database from '../../db/index.js';
 import { sendAdminOrganizationRequestEmail } from '../../SMTP/emails.js';
 import { newOrganizationRequestSchema } from '../../db/tables.js';
+import { authorizeOnly } from '../authorization.js';
 
-const orgRouter = Router();
+const organizationRouter = Router();
 
-orgRouter.post('/request', async (req, res) => {
+organizationRouter.post('/request', async (req, res) => {
   const body = newOrganizationRequestSchema.parse(req.body);
 
   const email = body.email.toLowerCase().trim();
 
-  // check email in existing account
   const checkAccountRequest = await database
     .selectFrom('organization_account')
     .select('id')
@@ -24,7 +24,6 @@ orgRouter.post('/request', async (req, res) => {
     });
   }
 
-  // check email in pending requests
   const checkPendingRequest = await database
     .selectFrom('organization_request')
     .select('id')
@@ -63,4 +62,18 @@ orgRouter.post('/request', async (req, res) => {
   }
 });
 
-export default orgRouter;
+organizationRouter.use(authorizeOnly('organization'));
+
+organizationRouter.get('/me', async (req, res) => {
+  const organization = await database
+    .selectFrom('organization_account')
+    .selectAll()
+    .where('id', '=', req.userJWT!.id)
+    .executeTakeFirstOrThrow();
+
+  // @ts-expect-error: do not return the password
+  delete organization.password;
+  res.json({ organization });
+});
+
+export default organizationRouter;

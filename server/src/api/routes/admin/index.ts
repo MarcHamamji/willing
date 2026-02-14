@@ -12,7 +12,7 @@ import { authorizeOnly } from '../../authorization.js';
 const adminRouter = Router();
 
 adminRouter.post('/login', async (req, res) => {
-  const body = LoginInfoSchema.parse(req.body);
+  const body = loginInfoSchema.parse(req.body);
 
   const account = await database
     .selectFrom('admin_account')

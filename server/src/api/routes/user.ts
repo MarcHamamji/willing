@@ -4,12 +4,12 @@ import * as jose from 'jose';
 
 import config from '../../config.js';
 import database from '../../db/index.js';
-import { LoginInfoSchema } from '../../types.js';
+import { loginInfoSchema } from '../../types.js';
 
 const userRouter = Router();
 
 userRouter.post('/login', async (req, res) => {
-  const body = LoginInfoSchema.parse(req.body);
+  const body = loginInfoSchema.parse(req.body);
 
   let organizationAccount;
   let volunteerAccount;
