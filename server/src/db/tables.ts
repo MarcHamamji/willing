@@ -173,8 +173,3 @@ export const VolunteerSkillSchema = zod.object({
 export type VolunteerSkill = zod.infer<typeof VolunteerSkillSchema>;
 
 export type VolunteerSkillTable = WithGeneratedID<VolunteerSkill>;
-
-export type PostingLocationNameTable = {
-  id: number;
-  name: string;
-};
