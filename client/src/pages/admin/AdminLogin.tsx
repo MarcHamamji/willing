@@ -1,3 +1,4 @@
+import { ShieldCheck, Mail, LockKeyhole } from 'lucide-react';
 import { useCallback, useContext, useEffect, useState, type ChangeEvent, type SubmitEvent } from 'react';
 import { useNavigate } from 'react-router';
 
@@ -51,7 +52,10 @@ function AdminLogin() {
     <div className="flex-grow hero bg-base-200">
       <div className="hero-content flex-col lg:flex-row-reverse gap-8">
         <div className="text-center lg:text-left">
-          <h1 className="text-5xl font-bold">Admin Login</h1>
+          <div className="flex items-center justify-center lg:justify-start gap-3 mb-2">
+            <ShieldCheck size={40} className="text-primary" />
+            <h1 className="text-5xl font-bold">Admin Login</h1>
+          </div>
           <p className="py-6">
             Authorized access only. This portal is restricted to system administrators for platform oversight and maintenance. Please log in to proceed to your secure dashboard.
           </p>
@@ -63,19 +67,26 @@ function AdminLogin() {
           >
             <fieldset className="fieldset">
               <label className="label">Email</label>
-              <input
-                type="email"
-                className="input w-full"
-                placeholder="Email"
-                onChange={handleEmailChange}
-              />
+              <div className="relative">
+                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 opacity-50 z-50" size={18} />
+                <input
+                  type="email"
+                  className="input input-bordered w-full pl-10 focus:input-primary"
+                  placeholder="Email"
+                  onChange={handleEmailChange}
+                />
+              </div>
+
               <label className="label">Password</label>
-              <input
-                type="password"
-                className="input w-full"
-                placeholder="Password"
-                onChange={handlePasswordChange}
-              />
+              <div className="relative">
+                <LockKeyhole className="absolute left-3 top-1/2 -translate-y-1/2 opacity-50 z-50" size={18} />
+                <input
+                  type="password"
+                  className="input input-bordered w-full pl-10 focus:input-primary"
+                  placeholder="Password"
+                  onChange={handlePasswordChange}
+                />
+              </div>
               <button
                 className="btn btn-primary mt-4"
                 type="submit"

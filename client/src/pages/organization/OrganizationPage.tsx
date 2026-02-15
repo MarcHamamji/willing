@@ -1,4 +1,5 @@
 import * as jose from 'jose';
+import { Building2, LogOut, ChevronDown } from 'lucide-react';
 import { useCallback, useContext, useEffect } from 'react';
 import { Outlet, useLocation, useNavigate } from 'react-router';
 
@@ -36,14 +37,17 @@ function OrganizationPageInner() {
 
   return (
     <main className="h-screen flex flex-col">
-      <Navbar right={(
+      <Navbar right={organization && (
         <div className="dropdown dropdown-bottom dropdown-end">
           <div tabIndex={0} role="button" className="btn btn-ghost m-1">
-            {organization ? organization.name : ''}
+            <Building2 size={18} />
+            {organization.name}
+            <ChevronDown size={14} className="opacity-50" />
           </div>
           <ul tabIndex={-1} className="dropdown-content menu bg-base-100 rounded-box z-1 w-52 p-2 shadow-sm">
             <li>
               <button onClick={handleLogout}>
+                <LogOut size={16} />
                 Logout
               </button>
             </li>

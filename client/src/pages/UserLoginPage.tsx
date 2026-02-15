@@ -1,3 +1,4 @@
+import { Mail, LockKeyhole, LogIn } from 'lucide-react';
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router';
 
@@ -56,30 +57,36 @@ function UserLoginPage() {
             >
               <fieldset className="fieldset">
                 <label className="label">Email</label>
-                <input
-                  type="email"
-                  className="input w-full"
-                  placeholder="Email"
-                  value={email}
-                  onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                    setEmail(e.currentTarget.value)}
-                />
-
+                <div className="relative">
+                  <Mail className="absolute left-3 top-1/2 -translate-y-1/2 opacity-50 z-50" size={18} />
+                  <input
+                    type="email"
+                    className="input input-bordered w-full pl-10"
+                    placeholder="Email"
+                    value={email}
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                      setEmail(e.currentTarget.value)}
+                  />
+                </div>
                 <label className="label">Password</label>
-                <input
-                  type="password"
-                  className="input w-full"
-                  placeholder="Password"
-                  value={password}
-                  onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                    setPassword(e.currentTarget.value)}
-                />
+                <div className="relative">
+                  <LockKeyhole className="absolute left-3 top-1/2 -translate-y-1/2 opacity-50 z-50" size={18} />
+                  <input
+                    type="password"
+                    className="input input-bordered w-full pl-10"
+                    placeholder="Password"
+                    value={password}
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                      setPassword(e.currentTarget.value)}
+                  />
+                </div>
 
                 <button
                   className="btn btn-primary mt-4"
                   type="submit"
                   disabled={!email || !password}
                 >
+                  <LogIn size={18} />
                   Login
                 </button>
               </fieldset>

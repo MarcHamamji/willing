@@ -1,3 +1,4 @@
+import { Home } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 import Footer from '../components/Footer';
@@ -21,6 +22,7 @@ function NotFoundPage() {
 
           <div className="pt-8">
             <Link to="/" className="btn btn-primary btn-wide shadow-lg">
+              <Home size={20} />
               Take Me Home
             </Link>
           </div>

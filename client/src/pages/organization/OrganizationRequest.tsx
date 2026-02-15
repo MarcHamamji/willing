@@ -1,3 +1,4 @@
+import { Building2, Mail, Phone, Globe, MapPin, Send } from 'lucide-react';
 import { useCallback, useState, type ChangeEvent, type SubmitEvent } from 'react';
 
 import LocationPicker from '../../components/LocationPicker';
@@ -62,53 +63,68 @@ export default function OrganizationRequestPage() {
           <form className="card-body" onSubmit={handleSubmit}>
             <fieldset className="fieldset">
               <label className="label">Organization name</label>
-              <input
-                name="name"
-                className="input w-full"
-                placeholder="Organization name"
-                value={form.name}
-                onChange={handleChange}
-                required
-              />
+              <div className="relative">
+                <Building2 className="absolute left-3 top-1/2 -translate-y-1/2 opacity-50 z-50" size={18} />
+                <input
+                  name="name"
+                  className="input input-bordered w-full pl-10"
+                  placeholder="Organization name"
+                  value={form.name}
+                  onChange={handleChange}
+                  required
+                />
+              </div>
 
               <label className="label">Email</label>
-              <input
-                name="email"
-                type="email"
-                className="input w-full"
-                placeholder="Email"
-                value={form.email}
-                onChange={handleChange}
-                required
-              />
+              <div className="relative">
+                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 opacity-50 z-50" size={18} />
+                <input
+                  name="email"
+                  type="email"
+                  className="input input-bordered w-full pl-10"
+                  placeholder="Email"
+                  value={form.email}
+                  onChange={handleChange}
+                  required
+                />
+              </div>
 
               <label className="label">Phone number</label>
-              <input
-                name="phone_number"
-                className="input w-full"
-                placeholder="Phone number"
-                value={form.phone_number}
-                onChange={handleChange}
-              />
+              <div className="relative">
+                <Phone className="absolute left-3 top-1/2 -translate-y-1/2 opacity-50 z-50" size={18} />
+                <input
+                  name="phone_number"
+                  className="input input-bordered w-full pl-10"
+                  placeholder="Phone number"
+                  value={form.phone_number}
+                  onChange={handleChange}
+                />
+              </div>
 
               <label className="label">Website</label>
-              <input
-                name="url"
-                className="input w-full"
-                placeholder="Website"
-                value={form.url}
-                onChange={handleChange}
-              />
+              <div className="relative">
+                <Globe className="absolute left-3 top-1/2 -translate-y-1/2 opacity-50 z-50" size={18} />
+                <input
+                  name="url"
+                  className="input input-bordered w-full pl-10"
+                  placeholder="Website"
+                  value={form.url}
+                  onChange={handleChange}
+                />
+              </div>
 
               <label className="label">Location</label>
-              <input
-                name="location_name"
-                className="input w-full"
-                placeholder="City, area, etc."
-                value={form.location_name}
-                onChange={handleChange}
-                required
-              />
+              <div className="relative">
+                <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 opacity-50 z-50" size={18} />
+                <input
+                  name="location_name"
+                  className="input input-bordered w-full pl-10"
+                  placeholder="City, area, etc."
+                  value={form.location_name}
+                  onChange={handleChange}
+                  required
+                />
+              </div>
 
               <div className="mt-2">
                 <LocationPicker
@@ -122,6 +138,7 @@ export default function OrganizationRequestPage() {
                 type="submit"
                 disabled={!form.name || !form.email || !form.phone_number || !form.url || !form.location_name}
               >
+                <Send size={18} />
                 Request Account
               </button>
             </fieldset>

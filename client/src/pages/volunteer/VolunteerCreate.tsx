@@ -1,10 +1,18 @@
+import {
+  User,
+  Mail,
+  LockKeyhole,
+  Calendar,
+  UserCircle,
+  UserPlus,
+  CheckCircle2,
+} from 'lucide-react';
 import { useState, type ChangeEvent } from 'react';
 import { useNavigate } from 'react-router';
 import { z } from 'zod';
 
 import requestServer from '../../requestServer';
 
-// Frontend validation schema
 const volunteerSchema = z
   .object({
     first_name: z.string().min(1),
@@ -86,79 +94,100 @@ export default function VolunteerCreate() {
             <div className="flex gap-4">
               <div className="flex-1">
                 <label className="label">First Name</label>
-                <input
-                  className="input w-full"
-                  value={firstName}
-                  placeholder="First name"
-                  onChange={(e: ChangeEvent<HTMLInputElement>) =>
-                    setFirstName(e.target.value)}
-                />
+                <div className="relative">
+                  <User className="absolute left-3 top-1/2 -translate-y-1/2 opacity-50 z-50" size={18} />
+                  <input
+                    className="input input-bordered w-full pl-10"
+                    value={firstName}
+                    placeholder="First name"
+                    onChange={(e: ChangeEvent<HTMLInputElement>) =>
+                      setFirstName(e.target.value)}
+                  />
+                </div>
               </div>
               <div className="flex-1">
                 <label className="label">Last Name</label>
-                <input
-                  className="input w-full"
-                  value={lastName}
-                  placeholder="Last name"
-                  onChange={(e: ChangeEvent<HTMLInputElement>) =>
-                    setLastName(e.target.value)}
-                />
+                <div className="relative">
+                  <User className="absolute left-3 top-1/2 -translate-y-1/2 opacity-50 z-50" size={18} />
+                  <input
+                    className="input input-bordered w-full pl-10"
+                    value={lastName}
+                    placeholder="Last name"
+                    onChange={(e: ChangeEvent<HTMLInputElement>) =>
+                      setLastName(e.target.value)}
+                  />
+                </div>
               </div>
             </div>
 
             <label className="label">Email</label>
-            <input
-              type="email"
-              className="input w-full"
-              placeholder="Email"
-              value={email}
-              onChange={(e: ChangeEvent<HTMLInputElement>) =>
-                setEmail(e.target.value)}
-            />
+            <div className="relative">
+              <Mail className="absolute left-3 top-1/2 -translate-y-1/2 opacity-50 z-50" size={18} />
+              <input
+                type="email"
+                className="input input-bordered w-full pl-10"
+                placeholder="Email"
+                value={email}
+                onChange={(e: ChangeEvent<HTMLInputElement>) =>
+                  setEmail(e.target.value)}
+              />
+            </div>
 
             <label className="label">Password</label>
-            <input
-              type="password"
-              className="input w-full"
-              placeholder="Password"
-              value={password}
-              onChange={(e: ChangeEvent<HTMLInputElement>) =>
-                setPassword(e.target.value)}
-            />
+            <div className="relative">
+              <LockKeyhole className="absolute left-3 top-1/2 -translate-y-1/2 opacity-50 z-50" size={18} />
+              <input
+                type="password"
+                className="input input-bordered w-full pl-10"
+                placeholder="Password"
+                value={password}
+                onChange={(e: ChangeEvent<HTMLInputElement>) =>
+                  setPassword(e.target.value)}
+              />
+            </div>
 
             <label className="label">Confirm Password</label>
-            <input
-              type="password"
-              className="input w-full"
-              placeholder="Confirm password"
-              value={confirmPassword}
-              onChange={(e: ChangeEvent<HTMLInputElement>) =>
-                setConfirmPassword(e.target.value)}
-            />
+            <div className="relative">
+              <CheckCircle2 className="absolute left-3 top-1/2 -translate-y-1/2 opacity-50 z-50" size={18} />
+              <input
+                type="password"
+                className="input input-bordered w-full pl-10"
+                placeholder="Confirm password"
+                value={confirmPassword}
+                onChange={(e: ChangeEvent<HTMLInputElement>) =>
+                  setConfirmPassword(e.target.value)}
+              />
+            </div>
 
             <div className="flex gap-4">
               <div className="flex-1">
                 <label className="label">Date of Birth</label>
-                <input
-                  type="date"
-                  className="input w-full"
-                  value={dateOfBirth}
-                  onChange={(e: ChangeEvent<HTMLInputElement>) =>
-                    setDateOfBirth(e.target.value)}
-                />
+                <div className="relative">
+                  <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 opacity-50 z-50" size={18} />
+                  <input
+                    type="date"
+                    className="input input-bordered w-full pl-10"
+                    value={dateOfBirth}
+                    onChange={(e: ChangeEvent<HTMLInputElement>) =>
+                      setDateOfBirth(e.target.value)}
+                  />
+                </div>
               </div>
               <div className="flex-1">
                 <label className="label">Gender</label>
-                <select
-                  className="select w-full"
-                  value={gender}
-                  onChange={e =>
-                    setGender(e.target.value as 'male' | 'female' | 'other')}
-                >
-                  <option value="male">Male</option>
-                  <option value="female">Female</option>
-                  <option value="other">Other</option>
-                </select>
+                <div className="relative">
+                  <UserCircle className="absolute left-3 top-1/2 -translate-y-1/2 opacity-50 z-50" size={18} />
+                  <select
+                    className="select select-bordered w-full pl-10"
+                    value={gender}
+                    onChange={e =>
+                      setGender(e.target.value as 'male' | 'female' | 'other')}
+                  >
+                    <option value="male">Male</option>
+                    <option value="female">Female</option>
+                    <option value="other">Other</option>
+                  </select>
+                </div>
               </div>
             </div>
 
@@ -167,6 +196,7 @@ export default function VolunteerCreate() {
               type="submit"
               disabled={!firstName || !lastName || !email || !password || !confirmPassword || !dateOfBirth || !gender}
             >
+              <UserPlus size={20} />
               Register
             </button>
           </form>

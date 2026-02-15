@@ -1,4 +1,5 @@
 import * as jose from 'jose';
+import { Building2, LayoutDashboard, LogIn, User } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 
@@ -26,8 +27,18 @@ function HomePage() {
     <div className="min-h-screen flex flex-col bg-base-100">
       <Navbar right={
         !role
-          ? <Link to="/login" className="btn btn-ghost">Login</Link>
-          : <Link to={'/' + role} className="btn btn-ghost">Dashboard</Link>
+          ? (
+              <Link to="/login" className="btn btn-ghost">
+                <LogIn size={20} />
+                Login
+              </Link>
+            )
+          : (
+              <Link to={'/' + role} className="btn btn-ghost">
+                <LayoutDashboard size={20} />
+                Dashboard
+              </Link>
+            )
       }
       />
 
@@ -45,7 +56,8 @@ function HomePage() {
 
         <div className="flex flex-col md:flex-row w-full gap-4">
           {/* Volunteer Card */}
-          <div className="card bg-base-200 rounded-box grid h-64 grow place-items-center p-8 text-center border-2 border-transparent hover:border-primary hover:-translate-y-2 transition-all duration-300 shadow-sm hover:shadow-xl">
+          <div className="card bg-base-200 rounded-box grid min-h-[18rem] grow place-items-center p-8 text-center border-2 border-transparent hover:border-primary hover:-translate-y-2 transition-all duration-300 shadow-sm hover:shadow-xl">
+            <User className="text-primary mb-4" size={48} />
             <span className="text-xs font-black uppercase tracking-[0.2em] text-primary">For Individuals</span>
             <h2 className="text-3xl font-bold mb-2">I want to help</h2>
             <p className="mb-6 opacity-80">Discover volunteer opportunities that match your skills.</p>
@@ -74,7 +86,8 @@ function HomePage() {
 
           <div className="divider md:divider-horizontal font-bold opacity-50">OR</div>
 
-          <div className="card bg-base-200 rounded-box grid h-64 grow place-items-center p-8 text-center border-2 border-transparent hover:border-secondary hover:-translate-y-2 transition-all duration-300 shadow-sm hover:shadow-xl">
+          <div className="card bg-base-200 rounded-box grid min-h-[18rem] grow place-items-center p-8 text-center border-2 border-transparent hover:border-secondary hover:-translate-y-2 transition-all duration-300 shadow-sm hover:shadow-xl">
+            <Building2 className="text-secondary mb-4" size={48} />
             <span className="text-xs font-black uppercase tracking-[0.2em] text-secondary">For Organizations</span>
             <h2 className="text-3xl font-bold mb-2">I want help</h2>
             <p className="mb-6 opacity-80">Request to register your organization and find volunteers.</p>

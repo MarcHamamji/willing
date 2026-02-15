@@ -1,4 +1,5 @@
 import { DomEvent, divIcon } from 'leaflet';
+import { Minus, Plus } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { MapContainer, Marker, TileLayer, useMap, useMapEvents } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
@@ -36,10 +37,10 @@ function MapZoomControl() {
     <div ref={containerRef} className="absolute top-2 left-2 z-[1000] flex flex-col gap-1">
       <div className="join join-vertical shadow-lg">
         <button type="button" className="btn btn-square btn-sm join-item bg-base-100" onClick={() => map.zoomIn()}>
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" className="w-5 h-5"><path d="M12 4.5v15m7.5-7.5h-15" /></svg>
+          <Plus size={20} />
         </button>
         <button type="button" className="btn btn-square btn-sm join-item bg-base-100" onClick={() => map.zoomOut()}>
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" className="w-5 h-5"><path d="M5 12h14" /></svg>
+          <Minus size={20} />
         </button>
       </div>
     </div>

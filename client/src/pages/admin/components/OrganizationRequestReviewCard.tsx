@@ -1,3 +1,12 @@
+import {
+  MapPin,
+  Mail,
+  Phone,
+  Globe,
+  CheckCircle,
+  XCircle,
+  MessageSquare,
+} from 'lucide-react';
 import { useCallback, useState } from 'react';
 
 import LocationPicker from '../../../components/LocationPicker';
@@ -54,10 +63,7 @@ function OrganizationRequestReviewCard({ request, refreshOrganizationRequests }:
       <div className="card-body">
         <h2 className="card-title text-primary">{request.name}</h2>
         <div className="text-sm opacity-70 flex items-center gap-1 mb-2">
-          <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-          </svg>
+          <MapPin size={16} />
           {request.location_name}
         </div>
 
@@ -65,40 +71,54 @@ function OrganizationRequestReviewCard({ request, refreshOrganizationRequests }:
 
         <div className="space-y-1 my-4 text-sm">
           <p className="flex justify-between">
-            <span className="font-semibold">Email</span>
+            <span className="flex items-center gap-2 font-semibold">
+              <Mail size={14} className="opacity-70" />
+              Email
+            </span>
             <span className="truncate ml-2">{request.email}</span>
           </p>
           <p className="flex justify-between">
-            <span className="font-semibold">Phone</span>
-            <a href={'tel:' + request.phone_number} target="_blank" className="link link-secondary truncate ml-2">{request.phone_number}</a>
+            <span className="flex items-center gap-2 font-semibold">
+              <Phone size={14} className="opacity-70" />
+              Phone
+            </span>
+            <span className="truncate ml-2">{request.phone_number}</span>
           </p>
           {request.url && (
             <p className="flex justify-between">
-              <span className="font-semibold">Website</span>
-              <a href={request.url} target="_blank" className="link link-secondary truncate ml-2">{request.url}</a>
+              <span className="flex items-center gap-2 font-semibold">
+                <Globe size={14} className="opacity-70" />
+                Website
+              </span>
+              <a href={request.url} target="_blank" className="link link-primary truncate ml-2">{request.url}</a>
             </p>
           )}
         </div>
 
-        <div className="card-actions justify-end mt-2">
-          <span className="join flex-grow">
+        <div className="card-actions flex-col gap-3">
+          <div className="join w-full relative">
+            <MessageSquare className="absolute left-3 top-1/2 -translate-y-1/2 opacity-40 z-50 pointer-events-none" size={16} />
             <input
-              className="input flex-grow join-item"
+              className="input input-bordered join-item flex-grow pl-10 border-l-rounded rounded-l-lg rounded-r-none"
               placeholder="Reason"
               onChange={handleReasonChange}
             />
             <button
-              className="btn join-item"
+              className="btn btn-error join-item gap-2"
               onClick={rejectRequest}
             >
+              <XCircle size={18} />
               Reject
             </button>
-          </span>
+          </div>
+
           <button
-            className="btn btn-primary"
+            className="btn btn-primary w-full gap-2"
             onClick={approveRequest}
           >
-            Approve
+            <CheckCircle size={18} />
+            {' '}
+            Approve Organization
           </button>
         </div>
       </div>
