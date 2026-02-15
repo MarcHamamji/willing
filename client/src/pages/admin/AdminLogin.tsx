@@ -1,20 +1,10 @@
 import { ShieldCheck, Mail, LockKeyhole } from 'lucide-react';
-import { useCallback, useContext, useEffect, useState, type ChangeEvent, type SubmitEvent } from 'react';
-import { useNavigate } from 'react-router';
+import { useCallback, useContext, useState, type ChangeEvent, type SubmitEvent } from 'react';
 
-import AdminContext from './AdminContext';
-import requestServer from '../../requestServer';
-
-import type { AdminAccountWithoutPassword } from '../../../../server/src/db/tables';
+import AuthContext from '../../auth/AuthContext';
 
 function AdminLogin() {
-  useEffect(() => {
-    localStorage.removeItem('jwt');
-  }, []);
-
-  const navigate = useNavigate();
-
-  const context = useContext(AdminContext);
+  const auth = useContext(AuthContext);
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -29,24 +19,9 @@ function AdminLogin() {
 
   const handleSubmit = useCallback(async (e: SubmitEvent<HTMLFormElement>) => {
     e.preventDefault();
-
-    const credentials = { email, password };
-
-    const response = await requestServer<{
-      token: string;
-      account: AdminAccountWithoutPassword;
-    }>('/admin/login', {
-      method: 'POST',
-      body: JSON.stringify(credentials),
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    });
-
-    localStorage.setItem('jwt', response.token);
-    context.refreshAdmin();
-    navigate('/admin/');
-  }, [email, password, navigate, context]);
+    console.log('Submitting admin login with email:', email);
+    auth.loginAdmin(email, password);
+  }, [email, password, auth]);
 
   return (
     <div className="flex-grow hero bg-base-200">

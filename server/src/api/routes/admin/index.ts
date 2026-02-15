@@ -45,7 +45,7 @@ adminRouter.post('/login', async (req, res) => {
 
   res.json({
     token,
-    account,
+    admin: account,
   });
 });
 
@@ -57,6 +57,9 @@ adminRouter.get('/me', async (req, res) => {
     .selectAll()
     .where('id', '=', req.userJWT!.id)
     .executeTakeFirstOrThrow();
+
+  // @ts-expect-error: Do not return the password
+  delete admin.password;
 
   res.json({ admin });
 });

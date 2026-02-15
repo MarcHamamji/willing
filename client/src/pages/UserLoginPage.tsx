@@ -1,41 +1,19 @@
 import { Mail, LockKeyhole, LogIn } from 'lucide-react';
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router';
+import React, { useState, useCallback, useContext } from 'react';
 
+import AuthContext from '../auth/AuthContext';
 import Navbar from '../components/Navbar';
-import requestServer from '../requestServer';
 
 function UserLoginPage() {
-  const navigate = useNavigate();
-
+  const auth = useContext(AuthContext);
   const [email, setEmail] = useState<string>('');
   const [password, setPassword] = useState<string>('');
 
-  const submission = async (e: React.SubmitEvent<HTMLFormElement>) => {
+  const submit = useCallback(async (e: React.SubmitEvent<HTMLFormElement>) => {
     e.preventDefault();
 
-    try {
-      const response = await requestServer<{
-        token: string;
-        role: 'organization' | 'volunteer';
-      }>('/user/login', {
-        method: 'POST',
-        body: JSON.stringify({ email, password }),
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
-
-      localStorage.setItem('jwt', response.token);
-
-      if (response.role === 'organization') {
-        navigate('/organization');
-      } else
-        navigate('/volunteer');
-    } catch (error) {
-      alert('Login failed: ' + error);
-    }
-  };
+    await auth.loginUser(email, password);
+  }, [email, password, auth]);
 
   return (
     <main className="h-screen flex flex-col">
@@ -53,7 +31,7 @@ function UserLoginPage() {
           <div className="card bg-base-100 w-full max-w-lg shrink-0 shadow-2xl">
             <form
               className="card-body"
-              onSubmit={submission}
+              onSubmit={submit}
             >
               <fieldset className="fieldset">
                 <label className="label">Email</label>

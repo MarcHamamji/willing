@@ -10,7 +10,7 @@ import {
 import { useCallback, useState } from 'react';
 
 import LocationPicker from '../../../components/LocationPicker';
-import requestServer from '../../../requestServer';
+import requestServer from '../../../utils/requestServer';
 
 import type { OrganizationRequest } from '../../../../../server/src/db/tables';
 

@@ -2,7 +2,7 @@ import { Building2, Mail, Phone, Globe, MapPin, Send } from 'lucide-react';
 import { useCallback, useState, type ChangeEvent, type SubmitEvent } from 'react';
 
 import LocationPicker from '../../components/LocationPicker';
-import requestServer from '../../requestServer';
+import requestServer from '../../utils/requestServer';
 
 type OrgForm = {
   name: string;

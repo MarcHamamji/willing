@@ -2,6 +2,8 @@ import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { BrowserRouter, Route, Routes } from 'react-router';
 
+import { AuthProvider } from './auth/AuthContext';
+import { AdminOnly, LoggedOutOnly, OrganizationOnly, VolunteerOnly } from './auth/guards';
 import AdminHome from './pages/admin/AdminHome';
 import AdminLogin from './pages/admin/AdminLogin';
 import AdminPage from './pages/admin/AdminPage';
@@ -22,24 +24,82 @@ import './index.css';
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <BrowserRouter>
-      <Routes>
-        <Route index element={<HomePage />} />
-        <Route path="login" element={<UserLoginPage />} />
-        <Route path="admin" element={<AdminPage />}>
-          <Route index element={<AdminHome />} />
-          <Route path="login" element={<AdminLogin />} />
-        </Route>
-        <Route path="organization" element={<OrganizationPage />}>
-          <Route index element={<OrganizationHome />}></Route>
-          <Route path="request" element={<OrganizationRequest />} />
-        </Route>
-        <Route path="volunteer" element={<VolunteerPage />}>
-          <Route index element={<VolunteerHome />}></Route>
-          <Route path="create" element={<VolunteerCreate />} />
-          <Route path="profile" element={<VolunteerProfile />} />
-        </Route>
-        <Route path="*" element={<NotFoundPage />} />
-      </Routes>
+      <AuthProvider>
+        <Routes>
+          <Route index element={<HomePage />} />
+          <Route
+            path="login"
+            element={(
+              <LoggedOutOnly>
+                <UserLoginPage />
+              </LoggedOutOnly>
+            )}
+          />
+          <Route path="admin" element={<AdminPage />}>
+            <Route
+              index
+              element={(
+                <AdminOnly redirectUrl="/admin/login">
+                  <AdminHome />
+                </AdminOnly>
+              )}
+            />
+            <Route
+              path="login"
+              element={(
+                <LoggedOutOnly>
+                  <AdminLogin />
+                </LoggedOutOnly>
+              )}
+            />
+          </Route>
+          <Route path="organization" element={<OrganizationPage />}>
+            <Route
+              index
+              element={(
+                <OrganizationOnly>
+                  <OrganizationHome />
+                </OrganizationOnly>
+              )}
+            />
+            <Route
+              path="request"
+              element={(
+                <LoggedOutOnly>
+                  <OrganizationRequest />
+                </LoggedOutOnly>
+              )}
+            />
+          </Route>
+          <Route path="volunteer" element={<VolunteerPage />}>
+            <Route
+              index
+              element={(
+                <VolunteerOnly>
+                  <VolunteerHome />
+                </VolunteerOnly>
+              )}
+            />
+            <Route
+              path="create"
+              element={(
+                <LoggedOutOnly>
+                  <VolunteerCreate />
+                </LoggedOutOnly>
+              )}
+            />
+            <Route
+              path="profile"
+              element={(
+                <VolunteerOnly>
+                  <VolunteerProfile />
+                </VolunteerOnly>
+              )}
+            />
+          </Route>
+          <Route path="*" element={<NotFoundPage />} />
+        </Routes>
+      </AuthProvider>
     </BrowserRouter>
   </StrictMode>,
 );

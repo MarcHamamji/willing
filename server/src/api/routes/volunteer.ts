@@ -65,6 +65,7 @@ volunteerRouter.get('/me', async (req, res) => {
 
   // @ts-expect-error: do not return the password
   delete volunteer.password;
+
   res.json({ volunteer });
 });
 

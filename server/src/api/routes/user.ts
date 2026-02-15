@@ -54,9 +54,15 @@ userRouter.post('/login', async (req, res) => {
     .setExpirationTime('7d')
     .sign(new TextEncoder().encode(config.JWT_SECRET));
 
+  // @ts-expect-error: Do not return the password
+  delete organizationAccount?.password;
+  // @ts-expect-error: Do not return the password
+  delete volunteerAccount?.password;
+
   res.json({
     token,
     role: organizationAccount ? 'organization' : 'volunteer',
+    [organizationAccount ? 'organization' : 'volunteer']: organizationAccount || volunteerAccount,
   });
 });
 

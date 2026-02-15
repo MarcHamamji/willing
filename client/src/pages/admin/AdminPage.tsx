@@ -1,38 +1,20 @@
-import * as jose from 'jose';
 import { ChevronDown, LogOut, ShieldUser } from 'lucide-react';
-import { useCallback, useContext, useEffect } from 'react';
-import { Outlet, useLocation, useNavigate } from 'react-router';
+import { useCallback, useContext } from 'react';
+import { Outlet } from 'react-router';
 
-import AdminContext, { AdminProvider } from './AdminContext';
+import AuthContext from '../../auth/AuthContext';
+import { useAdmin } from '../../auth/useUsers';
 import Navbar from '../../components/Navbar';
 
-import type { UserJWT } from '../../../../server/src/types';
+function AdminPage() {
+  const auth = useContext(AuthContext);
 
-function AdminPageInner() {
-  const navigate = useNavigate();
-  const location = useLocation();
-  const { admin, logout, refreshAdmin } = useContext(AdminContext);
-
-  useEffect(() => {
-    if (location.pathname === '/admin/login') return;
-    const jwt = localStorage.getItem('jwt');
-    if (!jwt) {
-      navigate('/admin/login');
-    } else {
-      const { role } = jose.decodeJwt<UserJWT>(jwt);
-      if (role === 'admin') {
-        refreshAdmin();
-      } else {
-        navigate('/' + role);
-      }
-    }
-  }, []);
+  const admin = useAdmin();
 
   const handleLogout = useCallback(() => {
     (document.activeElement as HTMLElement)?.blur();
-    logout();
-    navigate('/');
-  }, [logout, navigate]);
+    auth.logout();
+  }, [auth]);
 
   return (
     <main className="h-screen flex flex-col">
@@ -56,14 +38,6 @@ function AdminPageInner() {
       />
       <Outlet />
     </main>
-  );
-}
-
-function AdminPage() {
-  return (
-    <AdminProvider>
-      <AdminPageInner />
-    </AdminProvider>
   );
 }
 

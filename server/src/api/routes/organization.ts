@@ -114,6 +114,7 @@ organizationRouter.get('/me', async (req, res) => {
 
   // @ts-expect-error: do not return the password
   delete organization.password;
+
   res.json({ organization });
 });
 

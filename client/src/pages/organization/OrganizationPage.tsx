@@ -1,39 +1,20 @@
-import * as jose from 'jose';
 import { Building2, LogOut, ChevronDown } from 'lucide-react';
-import { useCallback, useContext, useEffect } from 'react';
-import { Outlet, useLocation, useNavigate } from 'react-router';
+import { useCallback, useContext } from 'react';
+import { Outlet } from 'react-router';
 
-import OrganizationContext, { OrganizationProvider } from './OrganizationContext';
+import AuthContext from '../../auth/AuthContext';
+import { useOrganization } from '../../auth/useUsers';
 import Navbar from '../../components/Navbar';
 
-import type { UserJWT } from '../../../../server/src/types';
+function OrganizationPage() {
+  const auth = useContext(AuthContext);
 
-function OrganizationPageInner() {
-  const navigate = useNavigate();
-  const location = useLocation();
-  const { organization, logout, refreshOrganization } = useContext(OrganizationContext);
-
-  useEffect(() => {
-    if (location.pathname === '/organization/request') return;
-
-    const jwt = localStorage.getItem('jwt');
-    if (!jwt) {
-      navigate('/organization/request');
-    } else {
-      const { role } = jose.decodeJwt<UserJWT>(jwt);
-      if (role === 'organization') {
-        refreshOrganization();
-      } else {
-        navigate('/' + role);
-      }
-    }
-  }, []);
+  const organization = useOrganization();
 
   const handleLogout = useCallback(() => {
     (document.activeElement as HTMLElement)?.blur();
-    logout();
-    navigate('/');
-  }, [logout, navigate]);
+    auth.logout();
+  }, [auth]);
 
   return (
     <main className="h-screen flex flex-col">
@@ -57,14 +38,6 @@ function OrganizationPageInner() {
       />
       <Outlet />
     </main>
-  );
-}
-
-function OrganizationPage() {
-  return (
-    <OrganizationProvider>
-      <OrganizationPageInner />
-    </OrganizationProvider>
   );
 }
 

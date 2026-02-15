@@ -1,9 +1,9 @@
 import { Inbox, ClipboardCheck } from 'lucide-react';
 import { useCallback } from 'react';
 
-import requestServer from '../../requestServer';
 import OrganizationRequestReviewCard from './components/OrganizationRequestReviewCard';
-import useAsync from '../../useAsync';
+import requestServer from '../../utils/requestServer';
+import useAsync from '../../utils/useAsync';
 
 import type { OrganizationRequest } from '../../../../server/src/db/tables';
 

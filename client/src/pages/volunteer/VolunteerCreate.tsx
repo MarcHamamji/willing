@@ -7,11 +7,10 @@ import {
   UserPlus,
   CheckCircle2,
 } from 'lucide-react';
-import { useState, type ChangeEvent } from 'react';
-import { useNavigate } from 'react-router';
+import { useContext, useState, type ChangeEvent } from 'react';
 import { z } from 'zod';
 
-import requestServer from '../../requestServer';
+import AuthContext from '../../auth/AuthContext';
 
 const volunteerSchema = z
   .object({
@@ -29,7 +28,7 @@ const volunteerSchema = z
   });
 
 export default function VolunteerCreate() {
-  const navigate = useNavigate();
+  const auth = useContext(AuthContext);
 
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
@@ -62,21 +61,7 @@ export default function VolunteerCreate() {
 
     const { confirmPassword: _, ...volunteerData } = parseResult.data;
 
-    // TODO: rely on global error handler (no try/catch here)
-    const response = await requestServer<{
-      volunteer: unknown;
-      token: string;
-    }>('/volunteer/create', {
-      method: 'POST',
-      body: JSON.stringify(volunteerData),
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    });
-
-    localStorage.setItem('jwt', response.token);
-
-    navigate('/volunteer');
+    auth.createVolunteer(volunteerData);
   };
 
   return (

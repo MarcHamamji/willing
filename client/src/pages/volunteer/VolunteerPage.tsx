@@ -1,39 +1,20 @@
-import * as jose from 'jose';
 import { User, ChevronDown, LogOut } from 'lucide-react';
-import { useCallback, useContext, useEffect } from 'react';
-import { Outlet, useLocation, useNavigate } from 'react-router';
+import { useCallback, useContext } from 'react';
+import { Outlet } from 'react-router';
 
-import VolunteerContext, { VolunteerProvider } from './VolunteerContext';
+import AuthContext from '../../auth/AuthContext';
+import { useVolunteer } from '../../auth/useUsers';
 import Navbar from '../../components/Navbar';
 
-import type { UserJWT } from '../../../../server/src/types';
+function VolunteerPage() {
+  const auth = useContext(AuthContext);
 
-function VolunteerPageInner() {
-  const navigate = useNavigate();
-  const location = useLocation();
-  const { volunteer, logout, refreshVolunteer } = useContext(VolunteerContext);
-
-  useEffect(() => {
-    if (location.pathname === '/volunteer/create') return;
-
-    const jwt = localStorage.getItem('jwt');
-    if (!jwt) {
-      navigate('/login');
-    } else {
-      const { role } = jose.decodeJwt<UserJWT>(jwt);
-      if (role === 'volunteer') {
-        refreshVolunteer();
-      } else {
-        navigate('/' + role);
-      }
-    }
-  }, []);
+  const volunteer = useVolunteer();
 
   const handleLogout = useCallback(() => {
     (document.activeElement as HTMLElement)?.blur();
-    logout();
-    navigate('/');
-  }, [logout, navigate]);
+    auth.logout();
+  }, [auth]);
 
   return (
     <main className="h-screen flex flex-col">
@@ -57,14 +38,6 @@ function VolunteerPageInner() {
       />
       <Outlet />
     </main>
-  );
-}
-
-function VolunteerPage() {
-  return (
-    <VolunteerProvider>
-      <VolunteerPageInner />
-    </VolunteerProvider>
   );
 }
 
