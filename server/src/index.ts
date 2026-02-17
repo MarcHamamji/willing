@@ -5,6 +5,7 @@ import { ZodError } from 'zod';
 
 import api from './api/index.js';
 import config from './config.js';
+import { migrateToLatest } from './db/migrate.js';
 
 const app = express();
 
@@ -41,10 +42,24 @@ app.use(((err, req, res, _next) => {
   });
 }) as ErrorRequestHandler);
 
-app.listen(config.SERVER_PORT, (error?: Error) => {
-  if (error) {
-    console.error('Failed to start server');
-  } else {
-    console.log('Listening on port ' + config.SERVER_PORT);
+async function startServer() {
+  try {
+    if (config.NODE_ENV === 'development') {
+      await migrateToLatest();
+      console.log('Database migrations completed');
+    }
+  } catch (error) {
+    console.error('Failed to run migrations:', error);
+    process.exit(1);
   }
-});
+
+  app.listen(config.SERVER_PORT, (error?: Error) => {
+    if (error) {
+      console.error('Failed to start server');
+    } else {
+      console.log('Listening on port ' + config.SERVER_PORT);
+    }
+  });
+}
+
+startServer();

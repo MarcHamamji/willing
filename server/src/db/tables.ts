@@ -19,7 +19,7 @@ export const volunteerAccountSchema = zod.object({
   id: zod.number(),
   first_name: zod.string().min(1, 'First name is required'),
   last_name: zod.string().min(1, 'Last name is required'),
-  email: zod.email('Invalid email'),
+  email: zod.email('Invalid email').transform(val => val.toLowerCase().trim()),
   password: zod
     .string()
     .min(8, 'Password must be at least 8 characters')
@@ -46,7 +46,7 @@ export type VolunteerAccountWithoutPassword = zod.infer<typeof newVolunteerAccou
 export const organizationRequestSchema = zod.object({
   id: zod.number(),
   name: zod.string().min(1, 'Name is required'),
-  email: zod.email('Invalid email'),
+  email: zod.string().email('Invalid email').transform(val => val.toLowerCase().trim()),
   phone_number: zod.e164('Phone number is invalid'),
   url: zod.url('URL is invalid'),
   latitude: zod
@@ -72,7 +72,7 @@ export type NewOrganizationRequest = zod.infer<typeof newOrganizationRequestSche
 export const organizationAccountSchema = zod.object({
   id: zod.number(),
   name: zod.string().min(1, 'Name is required'),
-  email: zod.email('Invalid email'),
+  email: zod.string().email('Invalid email').transform(val => val.toLowerCase().trim()),
   phone_number: zod.e164('Phone number is invalid'),
   url: zod.url('URL is invalid'),
   latitude: zod
@@ -108,7 +108,7 @@ export const adminAccountSchema = zod.object({
   id: zod.number(),
   first_name: zod.string().min(1, 'first name should have at least 1 character'),
   last_name: zod.string().min(1, 'last name should have at least 1 character'),
-  email: zod.email('Invalid email'),
+  email: zod.string().email('Invalid email').transform(val => val.toLowerCase().trim()),
   password: zod
     .string()
     .min(8, 'Password must be at least 8 characters')
@@ -152,7 +152,12 @@ export type OrganizationPosting = zod.infer<typeof organizationPostingSchema>;
 
 export type OrganizationPostingTable = WithGeneratedID<OrganizationPosting>;
 
-export const newOrganizationPostingSchema = organizationPostingSchema.omit({ id: true });
+export const newOrganizationPostingSchema = organizationPostingSchema
+  .omit({ id: true })
+  .extend({ skills: zod
+    .array(zod.string().min(1, 'Skill name is required'))
+    .optional(),
+  });
 export type NewOrganizationPosting = zod.infer<typeof newOrganizationPostingSchema>;
 
 export const PostingSkillSchema = zod.object({

@@ -36,7 +36,7 @@ class ESMFileMigrationProvider implements MigrationProvider {
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
-async function migrateToLatest() {
+export async function migrateToLatest() {
   const migrator = new Migrator({
     db: database,
     provider: new ESMFileMigrationProvider(path.join(__dirname, 'migrations')),
@@ -53,12 +53,6 @@ async function migrateToLatest() {
   });
 
   if (error) {
-    console.error('Failed to migrate');
-    console.error(error);
-    process.exit(1);
+    throw new Error(`Migration failed: ${error}`);
   }
-
-  await database.destroy();
 }
-
-migrateToLatest();
