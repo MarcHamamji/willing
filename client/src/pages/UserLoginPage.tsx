@@ -1,7 +1,7 @@
+import { zodResolver } from '@hookform/resolvers/zod';
 import { Mail, LockKeyhole, LogIn } from 'lucide-react';
 import { useContext } from 'react';
 import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
 
 import AuthContext from '../auth/AuthContext';
 import Navbar from '../components/Navbar';

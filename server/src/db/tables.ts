@@ -1,13 +1,13 @@
-import type { Generated } from 'kysely';
 import zod from 'zod';
+
+import type { Generated } from 'kysely';
 
 type WithGeneratedID<T> = Omit <T, 'id'> & {
   id: Generated<number>;
 };
 
-const organizationWebsiteSchema = zod.string()
+const organizationWebsiteSchema = zod.url('URL is invalid')
   .trim()
-  .url('URL is invalid')
   .refine(url => /^https?:\/\//i.test(url), {
     message: 'URL must start with http:// or https://',
   })
@@ -19,30 +19,24 @@ const organizationWebsiteSchema = zod.string()
       return false;
     }
   }, {
-    message: 'URL must include a domain like example.com',
+    message: 'URL is invalid',
   });
 
-export interface Database {
-  volunteer_account: VolunteerAccountTable;
-  organization_request: OrganizationRequestTable;
-  organization_account: OrganizationAccountTable;
-  admin_account: AdminAccountTable;
-  organization_posting: OrganizationPostingTable;
-  posting_skill: PostingSkillTable;
-  volunteer_skill: VolunteerSkillTable;
-}
+const passwordSchema = zod
+  .string()
+  .min(8, 'Password must be at least 8 characters')
+  .regex(/[A-Z]/, 'Password must contain at least one uppercase letter')
+  .regex(/[a-z]/, 'Password must contain at least one lowercase letter')
+  .regex(/[0-9]/, 'Password must contain at least one number');
+
+// volunteer_account
 
 export const volunteerAccountSchema = zod.object({
   id: zod.number(),
   first_name: zod.string().min(1, 'First name is required'),
   last_name: zod.string().min(1, 'Last name is required'),
   email: zod.email('Invalid email').transform(val => val.toLowerCase().trim()),
-  password: zod
-    .string()
-    .min(8, 'Password must be at least 8 characters')
-    .regex(/[A-Z]/, 'Password must contain at least one uppercase letter')
-    .regex(/[a-z]/, 'Password must contain at least one lowercase letter')
-    .regex(/[0-9]/, 'Password must contain at least one number'),
+  password: passwordSchema,
   date_of_birth: zod
     .string()
     .min(1, 'Date of birth is required')
@@ -60,10 +54,12 @@ export type NewVolunteerAccount = zod.infer<typeof newVolunteerAccountSchema>;
 export const volunteerAccountWithoutPasswordSchema = volunteerAccountSchema.omit({ password: true });
 export type VolunteerAccountWithoutPassword = zod.infer<typeof newVolunteerAccountSchema>;
 
+// organization_request
+
 export const organizationRequestSchema = zod.object({
   id: zod.number(),
   name: zod.string().min(1, 'Name is required'),
-  email: zod.string().email('Invalid email').transform(val => val.toLowerCase().trim()),
+  email: zod.email('Invalid email').transform(val => val.toLowerCase().trim()),
   phone_number: zod.e164('Phone number is invalid'),
   url: organizationWebsiteSchema,
   latitude: zod
@@ -86,10 +82,12 @@ export type OrganizationRequestTable = WithGeneratedID<OrganizationRequest>;
 export const newOrganizationRequestSchema = organizationRequestSchema.omit({ id: true });
 export type NewOrganizationRequest = zod.infer<typeof newOrganizationRequestSchema>;
 
+// organization_account
+
 export const organizationAccountSchema = zod.object({
   id: zod.number(),
   name: zod.string().min(1, 'Name is required'),
-  email: zod.string().email('Invalid email').transform(val => val.toLowerCase().trim()),
+  email: zod.email('Invalid email').transform(val => val.toLowerCase().trim()),
   phone_number: zod.e164('Phone number is invalid'),
   url: organizationWebsiteSchema,
   latitude: zod
@@ -103,12 +101,7 @@ export const organizationAccountSchema = zod.object({
     .max(180, { message: 'Longitude must be <= 180' })
     .optional(),
   location_name: zod.string().min(2, 'Location must be longer than 2 characters'),
-  password: zod
-    .string()
-    .min(8, 'Password must be at least 8 characters')
-    .regex(/[A-Z]/, 'Password must contain at least one uppercase letter')
-    .regex(/[a-z]/, 'Password must contain at least one lowercase letter')
-    .regex(/[0-9]/, 'Password must contain at least one number'),
+  password: passwordSchema,
 });
 
 export type OrganizationAccount = zod.infer<typeof organizationAccountSchema>;
@@ -121,17 +114,14 @@ export type NewOrganizationAccount = zod.infer<typeof newOrganizationAccountSche
 export const organizationAccountUpdate = organizationAccountSchema.omit({ password: true });
 export type OrganizationAccountWithoutPassword = zod.infer<typeof organizationAccountUpdate>;
 
+// admin_account
+
 export const adminAccountSchema = zod.object({
   id: zod.number(),
   first_name: zod.string().min(1, 'first name should have at least 1 character'),
   last_name: zod.string().min(1, 'last name should have at least 1 character'),
-  email: zod.string().email('Invalid email').transform(val => val.toLowerCase().trim()),
-  password: zod
-    .string()
-    .min(8, 'Password must be at least 8 characters')
-    .regex(/[A-Z]/, 'Password must contain at least one uppercase letter')
-    .regex(/[a-z]/, 'Password must contain at least one lowercase letter')
-    .regex(/[0-9]/, 'Password must contain at least one number'),
+  email: zod.email('Invalid email').transform(val => val.toLowerCase().trim()),
+  password: passwordSchema,
 });
 
 export type AdminAccount = zod.infer <typeof adminAccountSchema>;
@@ -143,6 +133,8 @@ export type NewAdminAccount = zod.infer<typeof newAdminAccountSchema>;
 
 export const adminAccountUpdate = adminAccountSchema.omit({ password: true });
 export type AdminAccountWithoutPassword = zod.infer<typeof adminAccountUpdate>;
+
+// organization_posting
 
 export const organizationPostingSchema = zod.object({
   id: zod.number(),
@@ -177,6 +169,8 @@ export const newOrganizationPostingSchema = organizationPostingSchema
   });
 export type NewOrganizationPosting = zod.infer<typeof newOrganizationPostingSchema>;
 
+// posting_skill
+
 export const PostingSkillSchema = zod.object({
   id: zod.number(),
   posting_id: zod.number().min(1, 'Posting ID is required'),
@@ -187,6 +181,8 @@ export type PostingSkill = zod.infer<typeof PostingSkillSchema>;
 
 export type PostingSkillTable = WithGeneratedID<PostingSkill>;
 
+// volunteer_skill
+
 export const VolunteerSkillSchema = zod.object({
   id: zod.number(),
   volunteer_id: zod.number().min(1, 'Volunteer ID is required'),
@@ -196,3 +192,13 @@ export const VolunteerSkillSchema = zod.object({
 export type VolunteerSkill = zod.infer<typeof VolunteerSkillSchema>;
 
 export type VolunteerSkillTable = WithGeneratedID<VolunteerSkill>;
+
+export interface Database {
+  volunteer_account: VolunteerAccountTable;
+  organization_request: OrganizationRequestTable;
+  organization_account: OrganizationAccountTable;
+  admin_account: AdminAccountTable;
+  organization_posting: OrganizationPostingTable;
+  posting_skill: PostingSkillTable;
+  volunteer_skill: VolunteerSkillTable;
+}

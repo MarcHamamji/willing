@@ -1,7 +1,7 @@
+import { zodResolver } from '@hookform/resolvers/zod';
 import { Building2, Mail, Phone, Globe, MapPin, Send } from 'lucide-react';
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
 
 import LocationPicker from '../../components/LocationPicker';
 import { organizationRequestFormSchema, type OrganizationRequestFormData } from '../../schemas/auth';
