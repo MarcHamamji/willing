@@ -19,6 +19,7 @@ function OrganizationRequestReviewCard({ request, refreshOrganizationRequests }:
   refreshOrganizationRequests: (...args: unknown[]) => unknown;
 }) {
   const [reason, setReason] = useState('');
+  const location: [number, number] = [request.latitude ?? 0, request.longitude ?? 0];
 
   const handleReasonChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     setReason(e.target.value);
@@ -67,7 +68,7 @@ function OrganizationRequestReviewCard({ request, refreshOrganizationRequests }:
           {request.location_name}
         </div>
 
-        <LocationPicker position={[request.latitude, request.longitude]} setPosition={() => {}} readOnly={true} />
+        <LocationPicker position={location} setPosition={() => {}} readOnly={true} />
 
         <div className="space-y-1 my-4 text-sm">
           <p className="flex justify-between">

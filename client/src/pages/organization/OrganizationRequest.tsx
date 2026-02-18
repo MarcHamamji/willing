@@ -1,53 +1,56 @@
 import { Building2, Mail, Phone, Globe, MapPin, Send } from 'lucide-react';
-import { useCallback, useState, type ChangeEvent, type SubmitEvent } from 'react';
+import { useState } from 'react';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
 
 import LocationPicker from '../../components/LocationPicker';
+import { organizationRequestFormSchema, type OrganizationRequestFormData } from '../../schemas/auth';
 import requestServer from '../../utils/requestServer';
 
-type OrgForm = {
-  name: string;
-  email: string;
-  phone_number: string;
-  url: string;
-  location_name: string;
-};
-
 export default function OrganizationRequestPage() {
-  const [form, setForm] = useState<OrgForm>({
-    name: '',
-    email: '',
-    phone_number: '',
-    url: '',
-    location_name: '',
+  const form = useForm<OrganizationRequestFormData>({
+    resolver: zodResolver(organizationRequestFormSchema),
+    mode: 'onTouched',
+    reValidateMode: 'onChange',
+    defaultValues: {
+      name: '',
+      email: '',
+      phone_number: '',
+      url: '',
+      location_name: '',
+    },
   });
   const [position, setPosition] = useState<[number, number]>([33.90192863620578, 35.477959277880416]);
 
-  const handleChange = useCallback((e: ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setForm(prev => ({ ...prev, [name]: value }));
-  }, []);
-
-  const handleSubmit = useCallback(async (e: SubmitEvent<HTMLFormElement>) => {
-    e.preventDefault();
+  const handleSubmit = form.handleSubmit(async (data) => {
+    form.clearErrors('root');
+    form.clearErrors('email');
 
     const payload = {
-      ...form,
+      ...data,
       latitude: position[0],
       longitude: position[1],
     };
-    console.log(payload);
 
-    // includeJwt is NOT passed
-    await requestServer<{ success: boolean }>('/organization/request', {
-      method: 'POST',
-      body: JSON.stringify(payload),
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    });
+    try {
+      await requestServer<{ success: boolean }>('/organization/request', {
+        method: 'POST',
+        body: JSON.stringify(payload),
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
 
-    alert('Organization request submitted successfully');
-  }, [form, position]);
+      alert('Organization request submitted successfully');
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Failed to submit organization request';
+      if (/email/i.test(message)) {
+        form.setError('email', { type: 'server', message });
+        return;
+      }
+      form.setError('root', { type: 'server', message });
+    }
+  });
 
   return (
     <div className="flex-grow hero bg-base-200">
@@ -66,65 +69,80 @@ export default function OrganizationRequestPage() {
               <div className="relative">
                 <Building2 className="absolute left-3 top-1/2 -translate-y-1/2 opacity-50 z-50" size={18} />
                 <input
-                  name="name"
-                  className="input input-bordered w-full pl-10"
+                  className={`input input-bordered w-full pl-10 ${form.formState.errors.name ? 'input-error' : ''}`}
                   placeholder="Organization name"
-                  value={form.name}
-                  onChange={handleChange}
-                  required
+                  {...form.register('name', {
+                    onChange: () => form.clearErrors('root'),
+                  })}
                 />
               </div>
+              {form.formState.errors.name?.message && (
+                <p className="text-error text-sm mt-1">{form.formState.errors.name.message}</p>
+              )}
 
               <label className="label">Email</label>
               <div className="relative">
                 <Mail className="absolute left-3 top-1/2 -translate-y-1/2 opacity-50 z-50" size={18} />
                 <input
-                  name="email"
                   type="email"
-                  className="input input-bordered w-full pl-10"
+                  className={`input input-bordered w-full pl-10 ${form.formState.errors.email ? 'input-error' : ''}`}
                   placeholder="Email"
-                  value={form.email}
-                  onChange={handleChange}
-                  required
+                  {...form.register('email', {
+                    onChange: () => {
+                      form.clearErrors('root');
+                      form.clearErrors('email');
+                    },
+                  })}
                 />
               </div>
+              {form.formState.errors.email?.message && (
+                <p className="text-error text-sm mt-1">{form.formState.errors.email.message}</p>
+              )}
 
               <label className="label">Phone number</label>
               <div className="relative">
                 <Phone className="absolute left-3 top-1/2 -translate-y-1/2 opacity-50 z-50" size={18} />
                 <input
-                  name="phone_number"
-                  className="input input-bordered w-full pl-10"
+                  className={`input input-bordered w-full pl-10 ${form.formState.errors.phone_number ? 'input-error' : ''}`}
                   placeholder="Phone number"
-                  value={form.phone_number}
-                  onChange={handleChange}
+                  {...form.register('phone_number', {
+                    onChange: () => form.clearErrors('root'),
+                  })}
                 />
               </div>
+              {form.formState.errors.phone_number?.message && (
+                <p className="text-error text-sm mt-1">{form.formState.errors.phone_number.message}</p>
+              )}
 
               <label className="label">Website</label>
               <div className="relative">
                 <Globe className="absolute left-3 top-1/2 -translate-y-1/2 opacity-50 z-50" size={18} />
                 <input
-                  name="url"
-                  className="input input-bordered w-full pl-10"
+                  className={`input input-bordered w-full pl-10 ${form.formState.errors.url ? 'input-error' : ''}`}
                   placeholder="Website"
-                  value={form.url}
-                  onChange={handleChange}
+                  {...form.register('url', {
+                    onChange: () => form.clearErrors('root'),
+                  })}
                 />
               </div>
+              {form.formState.errors.url?.message && (
+                <p className="text-error text-sm mt-1">{form.formState.errors.url.message}</p>
+              )}
 
               <label className="label">Location</label>
               <div className="relative">
                 <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 opacity-50 z-50" size={18} />
                 <input
-                  name="location_name"
-                  className="input input-bordered w-full pl-10"
+                  className={`input input-bordered w-full pl-10 ${form.formState.errors.location_name ? 'input-error' : ''}`}
                   placeholder="City, area, etc."
-                  value={form.location_name}
-                  onChange={handleChange}
-                  required
+                  {...form.register('location_name', {
+                    onChange: () => form.clearErrors('root'),
+                  })}
                 />
               </div>
+              {form.formState.errors.location_name?.message && (
+                <p className="text-error text-sm mt-1">{form.formState.errors.location_name.message}</p>
+              )}
 
               <div className="mt-2">
                 <LocationPicker
@@ -133,13 +151,19 @@ export default function OrganizationRequestPage() {
                 />
               </div>
 
+              {form.formState.errors.root?.message && (
+                <div className="alert alert-error mt-3">
+                  <span>{form.formState.errors.root.message}</span>
+                </div>
+              )}
+
               <button
                 className="btn btn-primary mt-4"
                 type="submit"
-                disabled={!form.name || !form.email || !form.phone_number || !form.url || !form.location_name}
+                disabled={form.formState.isSubmitting}
               >
                 <Send size={18} />
-                Request Account
+                {form.formState.isSubmitting ? 'Submitting...' : 'Request Account'}
               </button>
             </fieldset>
           </form>

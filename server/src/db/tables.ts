@@ -1,9 +1,26 @@
-import { Generated } from 'kysely';
+import type { Generated } from 'kysely';
 import zod from 'zod';
 
 type WithGeneratedID<T> = Omit <T, 'id'> & {
   id: Generated<number>;
 };
+
+const organizationWebsiteSchema = zod.string()
+  .trim()
+  .url('URL is invalid')
+  .refine(url => /^https?:\/\//i.test(url), {
+    message: 'URL must start with http:// or https://',
+  })
+  .refine((url) => {
+    try {
+      const hostname = new URL(url).hostname;
+      return hostname.includes('.') && !hostname.endsWith('.');
+    } catch {
+      return false;
+    }
+  }, {
+    message: 'URL must include a domain like example.com',
+  });
 
 export interface Database {
   volunteer_account: VolunteerAccountTable;
@@ -48,7 +65,7 @@ export const organizationRequestSchema = zod.object({
   name: zod.string().min(1, 'Name is required'),
   email: zod.string().email('Invalid email').transform(val => val.toLowerCase().trim()),
   phone_number: zod.e164('Phone number is invalid'),
-  url: zod.url('URL is invalid'),
+  url: organizationWebsiteSchema,
   latitude: zod
     .number()
     .min(-90, { message: 'Latitude must be >= -90' })
@@ -74,7 +91,7 @@ export const organizationAccountSchema = zod.object({
   name: zod.string().min(1, 'Name is required'),
   email: zod.string().email('Invalid email').transform(val => val.toLowerCase().trim()),
   phone_number: zod.e164('Phone number is invalid'),
-  url: zod.url('URL is invalid'),
+  url: organizationWebsiteSchema,
   latitude: zod
     .number()
     .min(-90, { message: 'Latitude must be >= -90' })

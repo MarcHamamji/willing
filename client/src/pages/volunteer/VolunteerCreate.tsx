@@ -7,62 +7,49 @@ import {
   UserPlus,
   CheckCircle2,
 } from 'lucide-react';
-import { useContext, useState, type ChangeEvent } from 'react';
-import { z } from 'zod';
+import { useContext } from 'react';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
 
 import AuthContext from '../../auth/AuthContext';
-
-const volunteerSchema = z
-  .object({
-    first_name: z.string().min(1),
-    last_name: z.string().min(1),
-    email: z.email(),
-    password: z.string().min(6),
-    confirmPassword: z.string().min(6),
-    date_of_birth: z.string().min(1),
-    gender: z.enum(['male', 'female', 'other']),
-  })
-  .refine(data => data.password === data.confirmPassword, {
-    message: 'Passwords do not match',
-    path: ['confirmPassword'],
-  });
+import { volunteerSignupSchema, type VolunteerSignupFormData } from '../../schemas/auth';
 
 export default function VolunteerCreate() {
   const auth = useContext(AuthContext);
+  const form = useForm<VolunteerSignupFormData>({
+    resolver: zodResolver(volunteerSignupSchema),
+    mode: 'onTouched',
+    reValidateMode: 'onChange',
+    defaultValues: {
+      first_name: '',
+      last_name: '',
+      email: '',
+      password: '',
+      confirmPassword: '',
+      date_of_birth: '',
+      gender: 'male',
+    },
+  });
 
-  const [firstName, setFirstName] = useState('');
-  const [lastName, setLastName] = useState('');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
-  const [dateOfBirth, setDateOfBirth] = useState('');
-  const [gender, setGender] = useState<'male' | 'female' | 'other'>('male');
+  const handleSubmit = form.handleSubmit(async (data) => {
+    form.clearErrors('root');
+    form.clearErrors('email');
 
-  const handleSubmit = async (
-    e: React.SyntheticEvent<HTMLFormElement>,
-  ) => {
-    e.preventDefault();
+    const { confirmPassword: _, ...volunteerData } = data;
 
-    // TODO: handle frontend validation errors later
-    const parseResult = volunteerSchema.safeParse({
-      first_name: firstName,
-      last_name: lastName,
-      email,
-      password,
-      confirmPassword,
-      date_of_birth: dateOfBirth,
-      gender,
-    });
+    try {
+      await auth.createVolunteer(volunteerData);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Unable to create account. Please try again.';
 
-    if (!parseResult.success) {
-      // TODO: show validation error messages
-      return;
+      if (/already exists/i.test(message)) {
+        form.setError('email', { type: 'server', message });
+        return;
+      }
+
+      form.setError('root', { type: 'server', message });
     }
-
-    const { confirmPassword: _, ...volunteerData } = parseResult.data;
-
-    auth.createVolunteer(volunteerData);
-  };
+  });
 
   return (
     <div className="hero bg-base-200 flex-grow">
@@ -82,26 +69,32 @@ export default function VolunteerCreate() {
                 <div className="relative">
                   <User className="absolute left-3 top-1/2 -translate-y-1/2 opacity-50 z-50" size={18} />
                   <input
-                    className="input input-bordered w-full pl-10"
-                    value={firstName}
+                    className={`input input-bordered w-full pl-10 ${form.formState.errors.first_name ? 'input-error' : ''}`}
                     placeholder="First name"
-                    onChange={(e: ChangeEvent<HTMLInputElement>) =>
-                      setFirstName(e.target.value)}
+                    {...form.register('first_name', {
+                      onChange: () => form.clearErrors('root'),
+                    })}
                   />
                 </div>
+                {form.formState.errors.first_name?.message && (
+                  <p className="text-error text-sm mt-1">{form.formState.errors.first_name.message}</p>
+                )}
               </div>
               <div className="flex-1">
                 <label className="label">Last Name</label>
                 <div className="relative">
                   <User className="absolute left-3 top-1/2 -translate-y-1/2 opacity-50 z-50" size={18} />
                   <input
-                    className="input input-bordered w-full pl-10"
-                    value={lastName}
+                    className={`input input-bordered w-full pl-10 ${form.formState.errors.last_name ? 'input-error' : ''}`}
                     placeholder="Last name"
-                    onChange={(e: ChangeEvent<HTMLInputElement>) =>
-                      setLastName(e.target.value)}
+                    {...form.register('last_name', {
+                      onChange: () => form.clearErrors('root'),
+                    })}
                   />
                 </div>
+                {form.formState.errors.last_name?.message && (
+                  <p className="text-error text-sm mt-1">{form.formState.errors.last_name.message}</p>
+                )}
               </div>
             </div>
 
@@ -110,39 +103,51 @@ export default function VolunteerCreate() {
               <Mail className="absolute left-3 top-1/2 -translate-y-1/2 opacity-50 z-50" size={18} />
               <input
                 type="email"
-                className="input input-bordered w-full pl-10"
+                className={`input input-bordered w-full pl-10 ${form.formState.errors.email ? 'input-error' : ''}`}
                 placeholder="Email"
-                value={email}
-                onChange={(e: ChangeEvent<HTMLInputElement>) =>
-                  setEmail(e.target.value)}
+                {...form.register('email', {
+                  onChange: () => {
+                    form.clearErrors('root');
+                    form.clearErrors('email');
+                  },
+                })}
               />
             </div>
+            {form.formState.errors.email?.message && (
+              <p className="text-error text-sm mt-1">{form.formState.errors.email.message}</p>
+            )}
 
             <label className="label">Password</label>
             <div className="relative">
               <LockKeyhole className="absolute left-3 top-1/2 -translate-y-1/2 opacity-50 z-50" size={18} />
               <input
                 type="password"
-                className="input input-bordered w-full pl-10"
+                className={`input input-bordered w-full pl-10 ${form.formState.errors.password ? 'input-error' : ''}`}
                 placeholder="Password"
-                value={password}
-                onChange={(e: ChangeEvent<HTMLInputElement>) =>
-                  setPassword(e.target.value)}
+                {...form.register('password', {
+                  onChange: () => form.clearErrors('root'),
+                })}
               />
             </div>
+            {form.formState.errors.password?.message && (
+              <p className="text-error text-sm mt-1">{form.formState.errors.password.message}</p>
+            )}
 
             <label className="label">Confirm Password</label>
             <div className="relative">
               <CheckCircle2 className="absolute left-3 top-1/2 -translate-y-1/2 opacity-50 z-50" size={18} />
               <input
                 type="password"
-                className="input input-bordered w-full pl-10"
+                className={`input input-bordered w-full pl-10 ${form.formState.errors.confirmPassword ? 'input-error' : ''}`}
                 placeholder="Confirm password"
-                value={confirmPassword}
-                onChange={(e: ChangeEvent<HTMLInputElement>) =>
-                  setConfirmPassword(e.target.value)}
+                {...form.register('confirmPassword', {
+                  onChange: () => form.clearErrors('root'),
+                })}
               />
             </div>
+            {form.formState.errors.confirmPassword?.message && (
+              <p className="text-error text-sm mt-1">{form.formState.errors.confirmPassword.message}</p>
+            )}
 
             <div className="flex gap-4">
               <div className="flex-1">
@@ -151,38 +156,50 @@ export default function VolunteerCreate() {
                   <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 opacity-50 z-50" size={18} />
                   <input
                     type="date"
-                    className="input input-bordered w-full pl-10"
-                    value={dateOfBirth}
-                    onChange={(e: ChangeEvent<HTMLInputElement>) =>
-                      setDateOfBirth(e.target.value)}
+                    className={`input input-bordered w-full pl-10 ${form.formState.errors.date_of_birth ? 'input-error' : ''}`}
+                    {...form.register('date_of_birth', {
+                      onChange: () => form.clearErrors('root'),
+                    })}
                   />
                 </div>
+                {form.formState.errors.date_of_birth?.message && (
+                  <p className="text-error text-sm mt-1">{form.formState.errors.date_of_birth.message}</p>
+                )}
               </div>
               <div className="flex-1">
                 <label className="label">Gender</label>
                 <div className="relative">
                   <UserCircle className="absolute left-3 top-1/2 -translate-y-1/2 opacity-50 z-50" size={18} />
                   <select
-                    className="select select-bordered w-full pl-10"
-                    value={gender}
-                    onChange={e =>
-                      setGender(e.target.value as 'male' | 'female' | 'other')}
+                    className={`select select-bordered w-full pl-10 ${form.formState.errors.gender ? 'select-error' : ''}`}
+                    {...form.register('gender', {
+                      onChange: () => form.clearErrors('root'),
+                    })}
                   >
                     <option value="male">Male</option>
                     <option value="female">Female</option>
                     <option value="other">Other</option>
                   </select>
                 </div>
+                {form.formState.errors.gender?.message && (
+                  <p className="text-error text-sm mt-1">{form.formState.errors.gender.message}</p>
+                )}
               </div>
             </div>
+
+            {form.formState.errors.root?.message && (
+              <div className="alert alert-error mt-3">
+                <span>{form.formState.errors.root.message}</span>
+              </div>
+            )}
 
             <button
               className="btn btn-primary mt-4"
               type="submit"
-              disabled={!firstName || !lastName || !email || !password || !confirmPassword || !dateOfBirth || !gender}
+              disabled={form.formState.isSubmitting}
             >
               <UserPlus size={20} />
-              Register
+              {form.formState.isSubmitting ? 'Registering...' : 'Register'}
             </button>
           </form>
         </div>
