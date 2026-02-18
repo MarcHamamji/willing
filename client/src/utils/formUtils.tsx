@@ -3,6 +3,7 @@ import { AlertCircle, type LucideIcon } from 'lucide-react';
 import type { HTMLInputTypeAttribute } from 'react';
 import type { FieldValues, UseFormReturn, Path } from 'react-hook-form';
 
+// eslint-disable-next-line react-refresh/only-export-components
 export async function executeAndShowError<T extends FieldValues>(
   form: UseFormReturn<T>,
   action: () => Promise<void>,
@@ -21,13 +22,19 @@ export async function executeAndShowError<T extends FieldValues>(
   }
 }
 
+interface FormSelectOption {
+  label: string;
+  value: string | number;
+}
+
 interface FormFieldProps<T extends FieldValues> {
   form: UseFormReturn<T>;
   name: Path<T>;
   label: string;
   placeholder?: string;
-  type?: HTMLInputTypeAttribute;
+  type?: HTMLInputTypeAttribute | 'textarea';
   Icon?: LucideIcon;
+  selectOptions?: FormSelectOption[];
 }
 
 export function FormField<T extends FieldValues>({
@@ -37,10 +44,20 @@ export function FormField<T extends FieldValues>({
   placeholder,
   type = 'text',
   Icon,
+  selectOptions,
 }: FormFieldProps<T>) {
   const { register, formState: { errors }, clearErrors } = form;
   const error = errors[name];
 
+  const commonProps = {
+    ...register(name, {
+      onChange: () => clearErrors('root' as any),
+    }),
+    placeholder: placeholder || label,
+  };
+
+  const statusClass = error ? (type === 'textarea' ? 'textarea-error' : (selectOptions ? 'select-error' : 'input-error')) : '';
+  const iconPadding = Icon ? 'pl-10' : '';
   return (
     <fieldset className="fieldset w-full">
       <label className="label">
@@ -53,16 +70,36 @@ export function FormField<T extends FieldValues>({
             size={18}
           />
         )}
-        <input
-          type={type}
-          placeholder={placeholder || label}
-          className={`input input-bordered w-full focus:input-primary ${Icon ? 'pl-10' : ''} ${
-            error ? 'input-error' : ''
-          }`}
-          {...register(name, {
-            onChange: () => clearErrors('root'),
-          })}
-        />
+
+        {
+          selectOptions
+            ? (
+                <select
+                  className={`select select-bordered w-full focus:select-primary ${iconPadding} ${statusClass}`}
+                  {...commonProps}
+                >
+                  {placeholder && <option value="" disabled>{placeholder}</option>}
+                  {selectOptions.map(opt => (
+                    <option key={opt.value} value={opt.value}>{opt.label}</option>
+                  ))}
+                </select>
+              )
+            : type === 'textarea'
+              ? (
+                  <textarea
+                    className={`textarea textarea-bordered w-full focus:textarea-primary ${iconPadding} ${statusClass}`}
+                    rows={6}
+                    {...commonProps}
+                  />
+                )
+              : (
+                  <input
+                    type={type}
+                    className={`input input-bordered w-full focus:input-primary ${iconPadding} ${statusClass}`}
+                    {...commonProps}
+                  />
+                )
+        }
       </div>
       {error?.message && (
         <p className="text-error text-sm mt-1">{error.message as string}</p>
@@ -83,7 +120,7 @@ export function FormRootError<T extends FieldValues>({
   if (!error) return null;
 
   return (
-    <div className="alert alert-error mt-4 shadow-sm py-3 transition-all animate-in fade-in slide-in-from-top-1">
+    <div className="alert alert-error alert-soft mt-2 shadow-sm py-3 transition-all animate-in fade-in slide-in-from-top-1">
       <AlertCircle size={20} />
       <span className="text-sm font-medium">
         {error.message as string}

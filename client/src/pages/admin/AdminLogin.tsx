@@ -1,9 +1,10 @@
 import { zodResolver } from '@hookform/resolvers/zod';
-import { ShieldCheck, Mail, LockKeyhole } from 'lucide-react';
+import { ShieldCheck, Mail, LockKeyhole, LogIn } from 'lucide-react';
 import { useContext } from 'react';
 import { useForm } from 'react-hook-form';
 
 import AuthContext from '../../auth/AuthContext';
+import Loading from '../../components/Loading';
 import { loginFormSchema, type LoginFormData } from '../../schemas/auth';
 import { executeAndShowError, FormField, FormRootError } from '../../utils/formUtils';
 
@@ -61,7 +62,16 @@ function AdminLogin() {
               type="submit"
               disabled={form.formState.isSubmitting}
             >
-              {form.formState.isSubmitting ? 'Logging in...' : 'Login'}
+              {
+                form.formState.isSubmitting
+                  ? <Loading />
+                  : (
+                      <>
+                        <LogIn size={20} />
+                        Login
+                      </>
+                    )
+              }
             </button>
           </form>
         </div>
