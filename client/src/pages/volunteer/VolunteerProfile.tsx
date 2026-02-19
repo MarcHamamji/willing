@@ -8,7 +8,7 @@ function VolunteerProfile() {
     .join('');
 
   return (
-    <div className="flex-grow bg-base-200">
+    <div className="grow bg-base-200">
       <div className="p-6 md:container mx-auto">
         <div className="flex items-start justify-between gap-4 flex-wrap">
           <div>

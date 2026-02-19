@@ -7,16 +7,19 @@ import { AdminOnly, LoggedOutOnly, OrganizationOnly, VolunteerOnly } from './aut
 import AdminHome from './pages/admin/AdminHome';
 import AdminLogin from './pages/admin/AdminLogin';
 import AdminPage from './pages/admin/AdminPage';
+import AdminSettings from './pages/admin/AdminSettings';
 import HomePage from './pages/HomePage';
 import NotFoundPage from './pages/NotFoundPage';
 import OrganizationHome from './pages/organization/OrganizationHome';
 import OrganizationPage from './pages/organization/OrganizationPage';
 import OrganizationRequest from './pages/organization/OrganizationRequest';
+import OrganizationSettings from './pages/organization/VolunteerSettings';
 import UserLoginPage from './pages/UserLoginPage';
 import VolunteerCreate from './pages/volunteer/VolunteerCreate';
 import VolunteerHome from './pages/volunteer/VolunteerHome';
 import VolunteerPage from './pages/volunteer/VolunteerPage';
 import VolunteerProfile from './pages/volunteer/VolunteerProfile';
+import VolunteerSettings from './pages/volunteer/VolunteerSettings';
 
 import 'leaflet/dist/leaflet.css';
 import './index.css';
@@ -52,6 +55,14 @@ createRoot(document.getElementById('root')!).render(
                 </LoggedOutOnly>
               )}
             />
+            <Route
+              path="settings"
+              element={(
+                <AdminOnly>
+                  <AdminSettings />
+                </AdminOnly>
+              )}
+            />
           </Route>
           <Route path="organization" element={<OrganizationPage />}>
             <Route
@@ -68,6 +79,14 @@ createRoot(document.getElementById('root')!).render(
                 <LoggedOutOnly>
                   <OrganizationRequest />
                 </LoggedOutOnly>
+              )}
+            />
+            <Route
+              path="settings"
+              element={(
+                <OrganizationOnly>
+                  <OrganizationSettings />
+                </OrganizationOnly>
               )}
             />
           </Route>
@@ -93,6 +112,14 @@ createRoot(document.getElementById('root')!).render(
               element={(
                 <VolunteerOnly>
                   <VolunteerProfile />
+                </VolunteerOnly>
+              )}
+            />
+            <Route
+              path="settings"
+              element={(
+                <VolunteerOnly>
+                  <VolunteerSettings />
                 </VolunteerOnly>
               )}
             />

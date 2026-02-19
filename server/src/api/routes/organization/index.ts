@@ -1,6 +1,7 @@
 import { Router } from 'express';
 
 import postingRouter from './posting.js';
+import resetPassword from '../../../auth/resetPassword.js';
 import database from '../../../db/index.js';
 import { newOrganizationRequestSchema } from '../../../db/tables.js';
 import { sendAdminOrganizationRequestEmail } from '../../../SMTP/emails.js';
@@ -75,6 +76,8 @@ organizationRouter.get('/me', async (req, res) => {
 
   res.json({ organization });
 });
+
+organizationRouter.post('/reset-password', resetPassword);
 
 organizationRouter.use('/posting', postingRouter);
 

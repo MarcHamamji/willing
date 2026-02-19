@@ -9,7 +9,7 @@ function NotFoundPage() {
     <div className="min-h-screen flex flex-col bg-base-100">
       <Navbar />
 
-      <main className="flex-grow flex flex-col items-center justify-center max-w-5xl mx-auto py-12 px-4 text-center">
+      <main className="grow flex flex-col items-center justify-center max-w-5xl mx-auto py-12 px-4 text-center">
         <div className="space-y-6">
           <h1 className="text-9xl font-black text-primary opacity-20">404</h1>
 

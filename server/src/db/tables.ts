@@ -22,7 +22,7 @@ const organizationWebsiteSchema = zod.url('URL is invalid')
     message: 'URL is invalid',
   });
 
-const passwordSchema = zod
+export const passwordSchema = zod
   .string()
   .min(8, 'Password must be at least 8 characters')
   .regex(/[A-Z]/, 'Password must contain at least one uppercase letter')

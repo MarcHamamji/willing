@@ -47,6 +47,7 @@ type AuthContextType = {
   loginAdmin: (email: string, password: string) => Promise<void>;
   loginUser: (email: string, password: string) => Promise<void>;
   createVolunteer: (volunteer: NewVolunteerAccount) => Promise<void>;
+  changePassword: (oldPassword: string, newPassword: string) => Promise<void>;
   logout: () => void;
   restrictRoute: (role: Role, unauthenticatedRedirectPath: string) => AccountWithoutPassword;
 };
@@ -58,6 +59,7 @@ const AuthContext = createContext<AuthContextType>({
   loginAdmin: async () => {},
   loginUser: async () => {},
   createVolunteer: async () => {},
+  changePassword: async () => {},
   logout: () => {},
   restrictRoute: (() => {
     return undefined as unknown as AccountWithoutPassword;
@@ -149,10 +151,28 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     });
   };
 
+  const changePassword = useCallback(async (currentPassword: string, newPassword: string) => {
+    if (!user) return;
+
+    const { token } = await requestServer<{ token: string }>('/' + user?.role + '/reset-password', {
+      method: 'POST',
+      body: JSON.stringify({
+        currentPassword,
+        newPassword,
+      }),
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    }, true);
+
+    localStorage.setItem('jwt', token);
+    refreshUser(token);
+  }, [user]);
+
   const logout = useCallback(() => {
     localStorage.removeItem('jwt');
     setUser(undefined);
-  }, []);
+  }, [user]);
 
   const restrictRoute = useCallback((allowedRole: Role, unauthenticatedRedirectPath: string) => {
     if (!user) {
@@ -172,7 +192,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   }, [user, navigate]);
 
   return (
-    <AuthContext.Provider value={{ user, loaded, refreshUser, loginAdmin, loginUser, createVolunteer, logout, restrictRoute }}>
+    <AuthContext.Provider value={{ user, loaded, refreshUser, loginAdmin, loginUser, createVolunteer, changePassword, logout, restrictRoute }}>
       {children}
     </AuthContext.Provider>
   );

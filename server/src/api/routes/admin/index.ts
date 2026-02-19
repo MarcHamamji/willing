@@ -3,6 +3,7 @@ import { Router } from 'express';
 import * as jose from 'jose';
 import zod from 'zod';
 
+import resetPassword from '../../../auth/resetPassword.js';
 import config from '../../../config.js';
 import database from '../../../db/index.js';
 import { sendOrganizationAcceptanceEmail, sendOrganizationRejectionEmail } from '../../../SMTP/emails.js';
@@ -135,5 +136,7 @@ adminRouter.post('/reviewOrganizationRequest', async (req, res, next) => {
     organization: insertedOrganization,
   });
 });
+
+adminRouter.post('/reset-password', resetPassword);
 
 export default adminRouter;

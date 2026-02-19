@@ -28,12 +28,12 @@ function HomePage() {
       }
       />
 
-      <main className="flex-grow flex flex-col items-center justify-center max-w-5xl mx-auto py-12 px-4">
+      <main className="grow flex flex-col items-center justify-center max-w-5xl mx-auto py-12 px-4">
         <div className="text-center mb-16">
           <h1 className="text-4xl md:text-6xl font-extrabold mb-4">
             Connecting volunteers to their
             <br />
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary via-purple-500 to-secondary">
+            <span className="text-transparent bg-clip-text bg-linear-to-r from-primary via-purple-500 to-secondary">
               vision of a better community
             </span>
           </h1>
@@ -41,7 +41,7 @@ function HomePage() {
         </div>
 
         <div className="flex flex-col md:flex-row w-full gap-4">
-          <div className="card bg-base-200 rounded-box grid min-h-[18rem] grow place-items-center p-8 text-center border-2 border-transparent hover:border-primary hover:-translate-y-2 transition-all duration-300 shadow-sm hover:shadow-xl">
+          <div className="card bg-base-200 rounded-box grid min-h-72 grow place-items-center p-8 text-center border-2 border-transparent hover:border-primary hover:-translate-y-2 transition-all duration-300 shadow-sm hover:shadow-xl">
             <User className="text-primary mb-4" size={48} />
             <span className="text-xs font-black uppercase tracking-[0.2em] text-primary">For Individuals</span>
             <h2 className="text-3xl font-bold mb-2">I want to help</h2>
@@ -71,7 +71,7 @@ function HomePage() {
 
           <div className="divider md:divider-horizontal font-bold opacity-50">OR</div>
 
-          <div className="card bg-base-200 rounded-box grid min-h-[18rem] grow place-items-center p-8 text-center border-2 border-transparent hover:border-secondary hover:-translate-y-2 transition-all duration-300 shadow-sm hover:shadow-xl">
+          <div className="card bg-base-200 rounded-box grid min-h-72 grow place-items-center p-8 text-center border-2 border-transparent hover:border-secondary hover:-translate-y-2 transition-all duration-300 shadow-sm hover:shadow-xl">
             <Building2 className="text-secondary mb-4" size={48} />
             <span className="text-xs font-black uppercase tracking-[0.2em] text-secondary">For Organizations</span>
             <h2 className="text-3xl font-bold mb-2">I want help</h2>

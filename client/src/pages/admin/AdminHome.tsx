@@ -21,7 +21,7 @@ function AdminHome() {
   } = useAsync(getOrganizationRequests, true);
 
   return (
-    <div className="flex-grow bg-base-200">
+    <div className="grow bg-base-200">
       <div className="p-6 md:container mx-auto">
         <div className="flex items-center justify-between mb-8">
           <div className="flex items-center gap-3">

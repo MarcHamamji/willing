@@ -1,15 +1,18 @@
 import type { ReactNode } from 'react';
 
-function Navbar({ right }: { right?: ReactNode }) {
+function Navbar({ center, right }: { center?: ReactNode; right?: ReactNode }) {
   return (
-    <div className="navbar bg-base-100 shadow-md">
-      <div className="flex-1">
+    <div className="navbar bg-base-100 shadow-md shrink-0 sticky top-0 z-9999">
+      <div className="navbar-start">
         <a className="btn btn-ghost text-xl" href="/">
           <img src="/willing.svg" className="h-6" alt="Willing Logo" />
           Willing
         </a>
       </div>
-      <div className="flex-none">
+      <div className="navbar-center">
+        { center }
+      </div>
+      <div className="navbar-end">
         { right }
       </div>
     </div>

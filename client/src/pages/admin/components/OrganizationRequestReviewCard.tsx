@@ -100,7 +100,7 @@ function OrganizationRequestReviewCard({ request, refreshOrganizationRequests }:
           <div className="join w-full relative">
             <MessageSquare className="absolute left-3 top-1/2 -translate-y-1/2 opacity-40 z-50 pointer-events-none" size={16} />
             <input
-              className="input input-bordered join-item flex-grow pl-10 border-l-rounded rounded-l-lg rounded-r-none"
+              className="input input-bordered join-item grow pl-10 border-l-rounded rounded-l-lg rounded-r-none"
               placeholder="Reason"
               onChange={handleReasonChange}
             />
