@@ -31,7 +31,7 @@ userRouter.post('/login', async (req, res) => {
 
   if ((!organizationAccount) && (!volunteerAccount)) {
     res.status(403);
-    throw new Error('Invalid login');
+    throw new Error('Invalid email or password');
   }
 
   let valid;
@@ -43,7 +43,7 @@ userRouter.post('/login', async (req, res) => {
 
   if (!valid) {
     res.status(403);
-    throw new Error('Invalid login');
+    throw new Error('Invalid email or password');
   }
 
   const token = await new jose.SignJWT({

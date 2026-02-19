@@ -22,14 +22,14 @@ adminRouter.post('/login', async (req, res) => {
 
   if (!account) {
     res.status(403);
-    throw new Error('Invalid login');
+    throw new Error('Invalid email or password');
   }
 
   const match = await bcrypt.compare(body.password, account.password);
 
   if (!match) {
     res.status(403);
-    throw new Error('Invalid login');
+    throw new Error('Invalid email or password');
   }
   const token = await new jose.SignJWT({
     id: account.id,
