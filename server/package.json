@@ -8,6 +8,7 @@
   "main": "index.js",
   "scripts": {
     "start": "tsc && node dist/index.js",
+    "dev": "nodemon",
     "migrate": "tsc && node dist/db/migrate.js",
     "create-admin": "tsc && node dist/scripts/create-admin.js",
     "lint": "eslint . --fix",
@@ -23,6 +24,7 @@
     "@types/pg": "^8.16.0",
     "eslint": "^9.39.2",
     "eslint-import-resolver-typescript": "^4.4.4",
+    "nodemon": "^3.1.13",
     "ts-node": "^10.9.2",
     "typescript": "^5.9.3",
     "typescript-eslint": "^8.54.0"
@@ -39,5 +41,5 @@
     "nodemailer": "^8.0.0",
     "pg": "^8.17.2",
     "zod": "^4.3.6"
-  } 
+  }
 }
