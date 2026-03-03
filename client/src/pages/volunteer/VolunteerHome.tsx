@@ -1,5 +1,5 @@
 import { Eye } from 'lucide-react';
-import { useCallback, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 import PostingCard from '../../components/PostingCard';
@@ -19,38 +19,47 @@ interface GetPostingsResponse {
 function VolunteerHome() {
   const navigate = useNavigate();
   const [postings, setPostings] = useState<PostingWithOrganization[]>([]);
-  const [filters, setFilters] = useState({
+  const [filters, setFilters] = useState<{
+    location: string;
+    skill: string;
+    startDate: string;
+    endDate: string;
+  }>({
     location: '',
     skill: '',
     startDate: '',
     endDate: '',
   });
 
-  const fetchPostings = useCallback(async () => {
+  const fetchPostings = async (useFilters?: typeof filters) => {
+    const f = useFilters ?? filters;
     const query = new URLSearchParams();
 
-    if (filters.location)
-      query.append('location_name', filters.location);
-
-    if (filters.skill)
-      query.append('skill', filters.skill);
-
-    if (filters.startDate)
-      query.append('start_timestamp', filters.startDate);
-
-    if (filters.endDate)
-      query.append('end_timestamp', filters.endDate);
+    if (f.location)
+      query.append('location_name', f.location);
+    if (f.skill)
+      query.append('skill', f.skill);
+    if (f.startDate)
+      query.append('start_timestamp', f.startDate);
+    if (f.endDate)
+      query.append('end_timestamp', f.endDate);
 
     const url = '/volunteer/posting?' + query.toString();
 
     const res = await requestServer<GetPostingsResponse>(url, {}, true);
 
     setPostings(res.postings);
-  }, [filters]);
+  };
 
   useEffect(() => {
     fetchPostings();
   }, []);
+
+  const resetFilters = () => {
+    const reset = { location: '', skill: '', startDate: '', endDate: '' };
+    setFilters(reset);
+    fetchPostings(reset);
+  };
 
   return (
     <div className="grow bg-base-200">
@@ -91,13 +100,23 @@ function VolunteerHome() {
               className="input input-bordered"
             />
           </div>
-          <button
-            className="btn btn-sm btn-primary"
-            disabled={!filters.location && !filters.skill && !filters.startDate && !filters.endDate}
-            onClick={fetchPostings}
-          >
-            Apply Filters
-          </button>
+          <div className="flex gap-3">
+            <button
+              className="btn btn-sm btn-primary"
+              disabled={!filters.location && !filters.skill && !filters.startDate && !filters.endDate}
+              onClick={() => void fetchPostings()}
+            >
+              Apply Filters
+            </button>
+
+            <button
+              className="btn btn-sm btn-ghost"
+              disabled={!filters.location && !filters.skill && !filters.startDate && !filters.endDate}
+              onClick={resetFilters}
+            >
+              Reset Filters
+            </button>
+          </div>
         </div>
 
         {postings.length === 0
