@@ -25,6 +25,7 @@ import PostingApplicationMessageModal from './PostingApplicationMessageModal';
 import SkillsInput from './SkillsInput';
 import SkillsList from './SkillsList';
 import { ToggleButton } from './ToggleButton';
+import VolunteerInfoCollapse from './VolunteerInfoCollapse';
 import { organizationPostingFormSchema, type OrganizationPostingFormData } from '../schemas/auth';
 import { executeAndShowError, FormField } from '../utils/formUtils';
 import requestServer from '../utils/requestServer';
@@ -831,96 +832,30 @@ function PostingView({ mode = 'organization' }: { mode?: PostingViewerMode }) {
                       )
                     : (
                         <div className="space-y-2">
-                          {applications.map((app) => {
-                            const volunteerName = `${app.first_name} ${app.last_name}`;
-                            const initials = `${app.first_name.charAt(0)}${app.last_name.charAt(0)}`.toUpperCase();
-                            const age = Math.floor(
-                              (Date.now() - new Date(app.date_of_birth).getTime()) / (365.25 * 24 * 60 * 60 * 1000),
-                            );
-
-                            const genderBadgeStyles = app.gender === 'male'
-                              ? 'badge-info'
-                              : app.gender === 'female'
-                                ? 'badge-secondary'
-                                : 'badge-accent';
-
-                            return (
-                              <div key={app.application_id} className="collapse collapse-arrow border border-base-300 bg-base-100">
-                                <input type="checkbox" />
-                                <div className="collapse-title flex items-center justify-between gap-3">
-                                  <div className="flex items-center gap-3">
-                                    <div className="avatar">
-                                      <div className="bg-primary text-primary-content rounded-full w-12 h-12 flex items-center justify-center">
-                                        <span className="text-lg font-semibold">{initials}</span>
-                                      </div>
-                                    </div>
-                                    <div className="flex flex-col">
-                                      <h5 className="font-bold text-base leading-tight">{volunteerName}</h5>
-                                      <div className="flex gap-2 mt-1">
-                                        <span className={`badge badge-sm gap-1 ${genderBadgeStyles}`}>
-                                          {app.gender === 'male' && <Mars size={10} />}
-                                          {app.gender === 'female' && <Venus size={10} />}
-                                          {app.gender === 'other' && <span className="font-bold">*</span>}
-                                          {app.gender.charAt(0).toUpperCase() + app.gender.slice(1)}
-                                        </span>
-                                        <span className="badge badge-sm">
-                                          {age}
-                                          {' '}
-                                          years old
-                                        </span>
-                                      </div>
-                                    </div>
-                                  </div>
-                                  <div className="flex gap-2">
-                                    <button
-                                      className="btn btn-success"
-                                      onClick={(e) => {
-                                        e.stopPropagation();
-                                        acceptApplication(app.application_id);
-                                      }}
-                                      disabled={processingApplicationId === app.application_id}
-                                    >
-                                      {processingApplicationId === app.application_id ? 'Processing...' : 'Accept'}
-                                    </button>
-                                    <button
-                                      className="btn btn-error btn-outline"
-                                      onClick={(e) => {
-                                        e.stopPropagation();
-                                        rejectApplication(app.application_id);
-                                      }}
-                                      disabled={processingApplicationId === app.application_id}
-                                    >
-                                      {processingApplicationId === app.application_id ? 'Processing...' : 'Reject'}
-                                    </button>
-                                  </div>
-                                </div>
-                                <div className="collapse-content pt-0">
-                                  <div className="flex items-center gap-2 text-xs opacity-70 mt-1">
-                                    <Mail size={12} />
-                                    {app.email}
-                                  </div>
-                                  {app.skills && app.skills.length > 0 && (
-                                    <div className="mt-3">
-                                      <p className="text-xs font-semibold opacity-70 mb-1">Skills</p>
-                                      <div className="flex flex-wrap gap-1">
-                                        <SkillsList skills={app.skills} />
-                                      </div>
-                                    </div>
-                                  )}
-                                  {app.message && (
-                                    <div className="mt-3">
-                                      <p className="text-xs font-semibold opacity-70 mb-1">Application Message</p>
-                                      <p className="text-xs opacity-80 italic">
-                                        "
-                                        {app.message}
-                                        "
-                                      </p>
-                                    </div>
-                                  )}
-                                </div>
-                              </div>
-                            );
-                          })}
+                          {applications.map(app => (
+                            <VolunteerInfoCollapse
+                              key={app.application_id}
+                              volunteer={{ ...app, id: app.application_id }}
+                              actions={(
+                                <>
+                                  <button
+                                    className="btn btn-success btn-soft"
+                                    onClick={() => acceptApplication(app.application_id)}
+                                    disabled={processingApplicationId === app.application_id}
+                                  >
+                                    {processingApplicationId === app.application_id ? 'Processing...' : 'Accept'}
+                                  </button>
+                                  <button
+                                    className="btn btn-error btn-soft"
+                                    onClick={() => rejectApplication(app.application_id)}
+                                    disabled={processingApplicationId === app.application_id}
+                                  >
+                                    {processingApplicationId === app.application_id ? 'Processing...' : 'Reject'}
+                                  </button>
+                                </>
+                              )}
+                            />
+                          ))}
                         </div>
                       )}
                 </div>
@@ -944,72 +879,12 @@ function PostingView({ mode = 'organization' }: { mode?: PostingViewerMode }) {
                       )
                     : (
                         <div className="space-y-2">
-                          {enrollments.map((volunteer) => {
-                            const volunteerName = `${volunteer.first_name} ${volunteer.last_name}`;
-                            const initials = `${volunteer.first_name.charAt(0)}${volunteer.last_name.charAt(0)}`.toUpperCase();
-                            const age = Math.floor(
-                              (Date.now() - new Date(volunteer.date_of_birth).getTime()) / (365.25 * 24 * 60 * 60 * 1000),
-                            );
-
-                            const genderBadgeStyles = volunteer.gender === 'male'
-                              ? 'badge-info'
-                              : volunteer.gender === 'female'
-                                ? 'badge-secondary'
-                                : 'badge-accent';
-
-                            return (
-                              <div key={volunteer.enrollment_id} className="collapse collapse-arrow border border-base-300 bg-base-100">
-                                <input type="checkbox" />
-                                <div className="collapse-title flex items-center gap-3">
-                                  <div className="avatar">
-                                    <div className="bg-primary text-primary-content rounded-full w-12 h-12 flex items-center justify-center">
-                                      <span className="text-lg font-semibold">{initials}</span>
-                                    </div>
-                                  </div>
-                                  <div className="flex flex-col">
-                                    <h5 className="font-bold text-base leading-tight">{volunteerName}</h5>
-                                    <div className="flex gap-2 mt-1">
-                                      <span className={`badge badge-sm gap-1 ${genderBadgeStyles}`}>
-                                        {volunteer.gender === 'male' && <Mars size={10} />}
-                                        {volunteer.gender === 'female' && <Venus size={10} />}
-                                        {volunteer.gender === 'other' && <span className="font-bold">*</span>}
-                                        {volunteer.gender.charAt(0).toUpperCase() + volunteer.gender.slice(1)}
-                                      </span>
-                                      <span className="badge badge-sm">
-                                        {age}
-                                        {' '}
-                                        years old
-                                      </span>
-                                    </div>
-                                  </div>
-                                </div>
-                                <div className="collapse-content pt-0">
-                                  <div className="flex items-center gap-2 text-xs opacity-70 mt-1">
-                                    <Mail size={12} />
-                                    {volunteer.email}
-                                  </div>
-                                  {volunteer.skills && volunteer.skills.length > 0 && (
-                                    <div className="mt-3">
-                                      <p className="text-xs font-semibold opacity-70 mb-1">Skills</p>
-                                      <div className="flex flex-wrap gap-1">
-                                        <SkillsList skills={volunteer.skills} />
-                                      </div>
-                                    </div>
-                                  )}
-                                  {volunteer.message && (
-                                    <div className="mt-3">
-                                      <p className="text-xs font-semibold opacity-70 mb-1">Message</p>
-                                      <p className="text-xs opacity-80 italic">
-                                        "
-                                        {volunteer.message}
-                                        "
-                                      </p>
-                                    </div>
-                                  )}
-                                </div>
-                              </div>
-                            );
-                          })}
+                          {enrollments.map(volunteer => (
+                            <VolunteerInfoCollapse
+                              key={volunteer.enrollment_id}
+                              volunteer={{ ...volunteer, id: volunteer.enrollment_id }}
+                            />
+                          ))}
                         </div>
                       )}
                 </div>
