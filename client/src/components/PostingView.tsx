@@ -3,7 +3,6 @@ import {
   ArrowLeft,
   Calendar,
   Cake,
-  Check,
   Edit3,
   Lock,
   LockOpen,
