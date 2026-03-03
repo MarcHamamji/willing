@@ -819,7 +819,7 @@ function PostingView({ mode = 'organization' }: { mode?: PostingViewerMode }) {
                           {applications.map(app => (
                             <VolunteerInfoCollapse
                               key={app.application_id}
-                              volunteer={{ ...app, id: app.application_id }}
+                              volunteer={app}
                               actions={(
                                 <>
                                   <button
@@ -866,7 +866,7 @@ function PostingView({ mode = 'organization' }: { mode?: PostingViewerMode }) {
                           {enrollments.map(volunteer => (
                             <VolunteerInfoCollapse
                               key={volunteer.enrollment_id}
-                              volunteer={{ ...volunteer, id: volunteer.enrollment_id }}
+                              volunteer={volunteer}
                             />
                           ))}
                         </div>

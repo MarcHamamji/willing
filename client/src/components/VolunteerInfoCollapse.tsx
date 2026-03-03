@@ -3,14 +3,10 @@ import { useMemo, type ReactNode } from 'react';
 
 import SkillsList from './SkillsList';
 
-import type { EnrolledVolunteer, PendingApplication } from '../../../server/src/types';
-
-type VolunteerData
-  = | (Omit<PendingApplication, 'application_id'> & { id: number | string })
-    | (Omit<EnrolledVolunteer, 'enrollment_id'> & { id: number | string });
+import type { PostingEnrollment } from '../../../server/src/types';
 
 interface VolunteerInfoCollapseProps {
-  volunteer: VolunteerData;
+  volunteer: PostingEnrollment;
   actions?: ReactNode;
 }
 
