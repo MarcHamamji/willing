@@ -252,7 +252,7 @@ export type EnrollmentTable = WithGeneratedIDAndCreatedAt<Enrollment>;
 export const EnrollmentApplicationSchema = zod.object({
   id: zod.number(),
   volunteer_id: zod.number().min(1, 'Volunteer ID is required'),
-  enrollment_id: zod.number().min(1, 'Enrollment ID is required'),
+  posting_id: zod.number().min(1, 'Posting ID is required'),
   message: zod.string().max(350, 'Your message is too long. Please limit it to 350 characters.').optional(),
   created_at: zod.date(),
 });

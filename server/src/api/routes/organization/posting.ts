@@ -136,7 +136,6 @@ postingRouter.get('/:id/enrollments', async (req, res) => {
   const enrollments = await database
     .selectFrom('enrollment')
     .innerJoin('volunteer_account', 'volunteer_account.id', 'enrollment.volunteer_id')
-    .leftJoin('enrollment_application', 'enrollment_application.enrollment_id', 'enrollment.id')
     .select([
       'enrollment.id as enrollment_id',
       'enrollment.volunteer_id',
@@ -148,7 +147,6 @@ postingRouter.get('/:id/enrollments', async (req, res) => {
       'volunteer_account.gender',
     ])
     .where('enrollment.posting_id', '=', postingId)
-    .where('enrollment_application.id', 'is', null)
     .execute();
 
   const volunteerIds = enrollments.map(e => e.volunteer_id);
@@ -253,6 +251,7 @@ postingRouter.delete('/:id', async (req, res) => {
 
   await database.transaction().execute(async (trx) => {
     await trx.deleteFrom('posting_skill').where('posting_id', '=', postingId).execute();
+    await trx.deleteFrom('enrollment_application').where('posting_id', '=', postingId).execute();
     await trx.deleteFrom('enrollment').where('posting_id', '=', postingId).execute();
     await trx.deleteFrom('organization_posting').where('id', '=', postingId).execute();
   });
@@ -286,7 +285,6 @@ postingRouter.get('/:id/applications', async (req, res) => {
     .innerJoin('volunteer_account', 'volunteer_account.id', 'enrollment_application.volunteer_id')
     .select([
       'enrollment_application.id as application_id',
-      'enrollment_application.enrollment_id',
       'enrollment_application.volunteer_id',
       'enrollment_application.message',
       'enrollment_application.created_at',
@@ -296,9 +294,7 @@ postingRouter.get('/:id/applications', async (req, res) => {
       'volunteer_account.date_of_birth',
       'volunteer_account.gender',
     ])
-    .where('enrollment_application.enrollment_id', 'in', qb =>
-      qb.selectFrom('enrollment').select('id').where('posting_id', '=', postingId),
-    )
+    .where('enrollment_application.posting_id', '=', postingId)
     .execute();
 
   const volunteerIds = applications.map(a => a.volunteer_id);
@@ -352,13 +348,11 @@ postingRouter.post('/:id/applications/:applicationId/accept', async (req, res) =
 
   const application = await database
     .selectFrom('enrollment_application')
-    .innerJoin('enrollment', 'enrollment.id', 'enrollment_application.enrollment_id')
     .select([
       'enrollment_application.id',
-      'enrollment_application.enrollment_id',
       'enrollment_application.volunteer_id',
+      'enrollment_application.posting_id',
       'enrollment_application.message',
-      'enrollment.posting_id',
     ])
     .where('enrollment_application.id', '=', applicationId)
     .executeTakeFirst();
@@ -374,12 +368,18 @@ postingRouter.post('/:id/applications/:applicationId/accept', async (req, res) =
   }
 
   await database.transaction().execute(async (trx) => {
-    if (application.message) {
-      await trx
-        .updateTable('enrollment')
-        .set({ message: application.message })
-        .where('id', '=', application.enrollment_id)
-        .execute();
+    const enrollment = await trx
+      .insertInto('enrollment')
+      .values({
+        volunteer_id: application.volunteer_id,
+        posting_id: application.posting_id,
+        message: application.message ?? undefined,
+      })
+      .returningAll()
+      .executeTakeFirst();
+
+    if (!enrollment) {
+      throw new Error('Failed to create enrollment');
     }
 
     await trx
@@ -421,17 +421,15 @@ postingRouter.delete('/:id/applications/:applicationId', async (req, res) => {
     return;
   }
 
-  await database.transaction().execute(async (trx) => {
-    await trx
-      .deleteFrom('enrollment_application')
-      .where('id', '=', applicationId)
-      .execute();
+  if (application.posting_id !== postingId) {
+    res.status(403).json({ error: 'Application does not belong to this posting' });
+    return;
+  }
 
-    await trx
-      .deleteFrom('enrollment')
-      .where('id', '=', application.enrollment_id)
-      .execute();
-  });
+  await database
+    .deleteFrom('enrollment_application')
+    .where('id', '=', applicationId)
+    .execute();
 
   res.json({ });
 });

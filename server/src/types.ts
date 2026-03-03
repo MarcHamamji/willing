@@ -68,7 +68,6 @@ const _pendingApplicationSchema = volunteerAccountWithoutPasswordSchema
   })
   .extend({
     application_id: zod.number(),
-    enrollment_id: EnrollmentApplicationSchema.shape.enrollment_id,
     volunteer_id: EnrollmentApplicationSchema.shape.volunteer_id,
     message: EnrollmentApplicationSchema.shape.message,
     created_at: EnrollmentApplicationSchema.shape.created_at,

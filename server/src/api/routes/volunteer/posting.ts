@@ -114,7 +114,7 @@ volunteerPostingRouter.get('/:id', async (req, res) => {
     .execute();
 
   const existingEnrollment = await database
-    .selectFrom('enrollment')
+    .selectFrom('enrollment_application')
     .select('id')
     .where('posting_id', '=', id)
     .where('volunteer_id', '=', volunteerId)
@@ -139,77 +139,56 @@ volunteerPostingRouter.post('/:id/enroll', async (req, res) => {
     return;
   }
 
-  const existingEnrollment = await database
-    .selectFrom('enrollment')
+  const existingApplication = await database
+    .selectFrom('enrollment_application')
     .select('id')
     .where('posting_id', '=', id)
     .where('volunteer_id', '=', volunteerId)
     .executeTakeFirst();
 
-  if (existingEnrollment) {
+  if (existingApplication) {
     res.status(409).json({ error: 'You have already applied to this posting' });
     return;
   }
 
-  const result = await database.transaction().execute(async (trx) => {
-    const enrollment = await trx
-      .insertInto('enrollment')
-      .values({
-        volunteer_id: volunteerId,
-        posting_id: id,
-        message: posting.is_open ? message ?? undefined : undefined,
-      })
-      .returningAll()
-      .executeTakeFirst();
+  const application = await database
+    .insertInto('enrollment_application')
+    .values({
+      volunteer_id: volunteerId,
+      posting_id: id,
+      message: message ?? undefined,
+    })
+    .returningAll()
+    .executeTakeFirst();
 
-    if (!enrollment) {
-      throw new Error('Failed to create enrollment');
-    }
+  if (!application) {
+    res.status(500).json({ error: 'Failed to create application' });
+    return;
+  }
 
-    if (!posting.is_open) {
-      await trx
-        .insertInto('enrollment_application')
-        .values({
-          volunteer_id: volunteerId,
-          enrollment_id: enrollment.id,
-          message: message ?? undefined,
-        })
-        .execute();
-    }
-
-    return enrollment;
-  });
-
-  res.json({ enrollment: result, isOpen: posting.is_open });
+  res.json({ application, isOpen: posting.is_open });
 });
 
 volunteerPostingRouter.delete('/:id/enroll', async (req, res) => {
   const volunteerId = req.userJWT!.id;
   const { id } = postingIdParamsSchema.parse(req.params);
 
-  const enrollment = await database
-    .selectFrom('enrollment')
+  const application = await database
+    .selectFrom('enrollment_application')
     .selectAll()
     .where('posting_id', '=', id)
     .where('volunteer_id', '=', volunteerId)
     .executeTakeFirst();
 
-  if (!enrollment) {
-    res.status(404).json({ error: 'Enrollment not found' });
+  if (!application) {
+    res.status(404).json({ error: 'Application not found' });
     return;
   }
 
-  await database.transaction().execute(async (trx) => {
-    await trx
-      .deleteFrom('enrollment_application')
-      .where('enrollment_id', '=', enrollment.id)
-      .execute();
-
-    await trx
-      .deleteFrom('enrollment')
-      .where('id', '=', enrollment.id)
-      .execute();
-  });
+  await database
+    .deleteFrom('enrollment_application')
+    .where('id', '=', application.id)
+    .execute();
 
   res.json({});
 });
