@@ -19,9 +19,9 @@ import { useForm, useWatch } from 'react-hook-form';
 import { useNavigate, useParams } from 'react-router-dom';
 
 import ColumnLayout from './ColumnLayout';
-import CustomMessageModal from './CustomMessageModal';
 import Loading from './Loading';
 import LocationPicker from './LocationPicker';
+import PostingApplicationMessageModal from './PostingApplicationMessageModal';
 import SkillsInput from './SkillsInput';
 import SkillsList from './SkillsList';
 import { ToggleButton } from './ToggleButton';
@@ -485,7 +485,7 @@ function PostingView({ mode = 'organization' }: { mode?: PostingViewerMode }) {
 
   return (
     <div className="grow bg-base-200">
-      <CustomMessageModal
+      <PostingApplicationMessageModal
         open={isApplyModalOpen}
         submitting={applying}
         onClose={closeApplyModal}
