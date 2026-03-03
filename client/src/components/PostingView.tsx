@@ -847,27 +847,51 @@ function PostingView({ mode = 'organization' }: { mode?: PostingViewerMode }) {
                             return (
                               <div key={app.application_id} className="collapse collapse-arrow border border-base-300 bg-base-100">
                                 <input type="checkbox" />
-                                <div className="collapse-title flex items-center gap-3">
-                                  <div className="avatar">
-                                    <div className="bg-primary text-primary-content rounded-full w-12 h-12 flex items-center justify-center">
-                                      <span className="text-lg font-semibold">{initials}</span>
+                                <div className="collapse-title flex items-center justify-between gap-3">
+                                  <div className="flex items-center gap-3">
+                                    <div className="avatar">
+                                      <div className="bg-primary text-primary-content rounded-full w-12 h-12 flex items-center justify-center">
+                                        <span className="text-lg font-semibold">{initials}</span>
+                                      </div>
+                                    </div>
+                                    <div className="flex flex-col">
+                                      <h5 className="font-bold text-base leading-tight">{volunteerName}</h5>
+                                      <div className="flex gap-2 mt-1">
+                                        <span className={`badge badge-sm gap-1 ${genderBadgeStyles}`}>
+                                          {app.gender === 'male' && <Mars size={10} />}
+                                          {app.gender === 'female' && <Venus size={10} />}
+                                          {app.gender === 'other' && <span className="font-bold">*</span>}
+                                          {app.gender.charAt(0).toUpperCase() + app.gender.slice(1)}
+                                        </span>
+                                        <span className="badge badge-sm">
+                                          {age}
+                                          {' '}
+                                          years old
+                                        </span>
+                                      </div>
                                     </div>
                                   </div>
-                                  <div className="flex flex-col">
-                                    <h5 className="font-bold text-base leading-tight">{volunteerName}</h5>
-                                    <div className="flex gap-2 mt-1">
-                                      <span className={`badge badge-sm gap-1 ${genderBadgeStyles}`}>
-                                        {app.gender === 'male' && <Mars size={10} />}
-                                        {app.gender === 'female' && <Venus size={10} />}
-                                        {app.gender === 'other' && <span className="font-bold">*</span>}
-                                        {app.gender.charAt(0).toUpperCase() + app.gender.slice(1)}
-                                      </span>
-                                      <span className="badge badge-sm">
-                                        {age}
-                                        {' '}
-                                        years old
-                                      </span>
-                                    </div>
+                                  <div className="flex gap-2">
+                                    <button
+                                      className="btn btn-success"
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        acceptApplication(app.application_id);
+                                      }}
+                                      disabled={processingApplicationId === app.application_id}
+                                    >
+                                      {processingApplicationId === app.application_id ? 'Processing...' : 'Accept'}
+                                    </button>
+                                    <button
+                                      className="btn btn-error btn-outline"
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        rejectApplication(app.application_id);
+                                      }}
+                                      disabled={processingApplicationId === app.application_id}
+                                    >
+                                      {processingApplicationId === app.application_id ? 'Processing...' : 'Reject'}
+                                    </button>
                                   </div>
                                 </div>
                                 <div className="collapse-content pt-0">
@@ -893,22 +917,6 @@ function PostingView({ mode = 'organization' }: { mode?: PostingViewerMode }) {
                                       </p>
                                     </div>
                                   )}
-                                  <div className="mt-4 flex gap-2">
-                                    <button
-                                      className="btn btn-sm btn-success"
-                                      onClick={() => acceptApplication(app.application_id)}
-                                      disabled={processingApplicationId === app.application_id}
-                                    >
-                                      {processingApplicationId === app.application_id ? 'Processing...' : 'Accept'}
-                                    </button>
-                                    <button
-                                      className="btn btn-sm btn-error btn-outline"
-                                      onClick={() => rejectApplication(app.application_id)}
-                                      disabled={processingApplicationId === app.application_id}
-                                    >
-                                      {processingApplicationId === app.application_id ? 'Processing...' : 'Reject'}
-                                    </button>
-                                  </div>
                                 </div>
                               </div>
                             );
