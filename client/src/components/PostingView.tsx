@@ -1,6 +1,5 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import {
-  ArrowLeft,
   Calendar,
   Cake,
   Edit3,
@@ -18,6 +17,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import ColumnLayout from './ColumnLayout';
 import Loading from './Loading';
 import LocationPicker from './LocationPicker';
+import PageHeader from './PageHeader';
 import PostingApplicationMessageModal from './PostingApplicationMessageModal';
 import SkillsInput from './SkillsInput';
 import SkillsList from './SkillsList';
@@ -506,51 +506,39 @@ function PostingView({ mode = 'organization' }: { mode?: PostingViewerMode }) {
         errorMessage={applyError}
       />
       <div className="p-6 md:container mx-auto">
-        <div className="flex items-start justify-between gap-4 flex-wrap mb-6 bg-base-200 -mx-6 px-6 py-4">
-          <div className="flex items-center gap-3">
-            <button
-              className="btn btn-ghost btn-sm"
-              onClick={() => navigate(isVolunteerView ? '/volunteer' : '/organization')}
-            >
-              <ArrowLeft size={20} />
-            </button>
-            <div>
-              <h3 className="text-3xl font-extrabold tracking-tight">Posting Details</h3>
-              <p className="opacity-70 mt-1">
-                {isVolunteerView ? 'Review details before applying' : 'View and manage your posting'}
-              </p>
-            </div>
-          </div>
-          <div className="flex gap-2">
-            {!isVolunteerView && (isEditMode
-              ? (
-                  <>
-                    <button className="btn btn-outline" onClick={onCancelEdit} disabled={saving}>
-                      Cancel
-                    </button>
-                    <button className="btn btn-primary" onClick={onSave} disabled={saving}>
-                      {saving ? 'Saving...' : 'Save Changes'}
-                    </button>
-                  </>
-                )
-              : (
-                  <>
-                    <button className="btn btn-outline" onClick={() => setIsEditMode(true)}>
-                      <Edit3 size={16} />
-                      Edit
-                    </button>
-                    <button
-                      className="btn btn-outline btn-error"
-                      onClick={onDelete}
-                      disabled={deleting}
-                    >
-                      <Trash2 size={16} />
-                      {deleting ? 'Deleting...' : 'Delete'}
-                    </button>
-                  </>
-                ))}
-          </div>
-        </div>
+        <PageHeader
+          title="Posting Details"
+          subtitle={isVolunteerView ? 'Review details before applying' : 'View and manage your posting'}
+          backTo={isVolunteerView ? '/volunteer' : '/organization'}
+          actions={!isVolunteerView && (isEditMode
+            ? (
+                <>
+                  <button className="btn btn-outline" onClick={onCancelEdit} disabled={saving}>
+                    Cancel
+                  </button>
+                  <button className="btn btn-primary" onClick={onSave} disabled={saving}>
+                    {saving ? 'Saving...' : 'Save Changes'}
+                  </button>
+                </>
+              )
+            : (
+                <>
+                  <button className="btn btn-outline" onClick={() => setIsEditMode(true)}>
+                    <Edit3 size={16} />
+                    Edit
+                  </button>
+                  <button
+                    className="btn btn-outline btn-error"
+                    onClick={onDelete}
+                    disabled={deleting}
+                  >
+                    <Trash2 size={16} />
+                    {deleting ? 'Deleting...' : 'Delete'}
+                  </button>
+                </>
+              )
+          )}
+        />
 
         <div className="mt-6">
           {saveMessage && (
