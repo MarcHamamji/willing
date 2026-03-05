@@ -8,6 +8,10 @@ import {
   type NewOrganizationPosting,
   type PostingSkill,
 } from '../../../db/tables.js';
+import {
+  sendVolunteerApplicationAcceptedEmail,
+  sendVolunteerApplicationRejectedEmail,
+} from '../../../SMTP/emails.js';
 
 const postingRouter = Router();
 
@@ -367,7 +371,27 @@ postingRouter.post('/:id/applications/:applicationId/accept', async (req, res: R
     res.status(403);
     throw new Error('Application does not belong to this posting');
   }
+  const emailContext = await database
+    .selectFrom('enrollment_application')
+    .innerJoin('volunteer_account', 'volunteer_account.id', 'enrollment_application.volunteer_id')
+    .innerJoin('organization_posting', 'organization_posting.id', 'enrollment_application.posting_id')
+    .innerJoin('organization_account', 'organization_account.id', 'organization_posting.organization_id')
+    .select([
+      'volunteer_account.email as volunteer_email',
+      'volunteer_account.first_name',
+      'volunteer_account.last_name',
+      'organization_account.name as organization_name',
+      'organization_posting.title as posting_title',
+    ])
+    .where('enrollment_application.id', '=', applicationId)
+    .where('enrollment_application.posting_id', '=', postingId)
+    .where('organization_posting.organization_id', '=', orgId)
+    .executeTakeFirst();
 
+  if (!emailContext) {
+    res.status(404);
+    throw new Error('Application not found');
+  }
   await database.transaction().execute(async (trx) => {
     const enrollment = await trx
       .insertInto('enrollment')
@@ -388,7 +412,18 @@ postingRouter.post('/:id/applications/:applicationId/accept', async (req, res: R
       .where('id', '=', applicationId)
       .execute();
   });
-
+  if (emailContext) {
+    try {
+      await sendVolunteerApplicationAcceptedEmail({
+        volunteerEmail: emailContext.volunteer_email,
+        volunteerName: `${emailContext.first_name} ${emailContext.last_name}`,
+        organizationName: emailContext.organization_name,
+        postingTitle: emailContext.posting_title,
+      });
+    } catch (err) {
+      console.error('Failed to send acceptance email:', err);
+    }
+  }
   res.json({});
 });
 
@@ -426,11 +461,39 @@ postingRouter.delete('/:id/applications/:applicationId', async (req, res: Respon
     res.status(403);
     throw new Error('Application does not belong to this posting');
   }
+  const emailContext = await database
+    .selectFrom('enrollment_application')
+    .innerJoin('volunteer_account', 'volunteer_account.id', 'enrollment_application.volunteer_id')
+    .innerJoin('organization_posting', 'organization_posting.id', 'enrollment_application.posting_id')
+    .innerJoin('organization_account', 'organization_account.id', 'organization_posting.organization_id')
+    .select([
+      'volunteer_account.email as volunteer_email',
+      'volunteer_account.first_name',
+      'volunteer_account.last_name',
+      'organization_account.name as organization_name',
+      'organization_posting.title as posting_title',
+    ])
+    .where('enrollment_application.id', '=', applicationId)
+    .where('enrollment_application.posting_id', '=', postingId)
+    .where('organization_posting.organization_id', '=', orgId)
+    .executeTakeFirst();
 
   await database
     .deleteFrom('enrollment_application')
     .where('id', '=', applicationId)
     .execute();
+  if (emailContext) {
+    try {
+      await sendVolunteerApplicationRejectedEmail({
+        volunteerEmail: emailContext.volunteer_email,
+        volunteerName: `${emailContext.first_name} ${emailContext.last_name}`,
+        organizationName: emailContext.organization_name,
+        postingTitle: emailContext.posting_title,
+      });
+    } catch (err) {
+      console.error('Failed to send rejection email:', err);
+    }
+  }
 
   res.json({ });
 });
