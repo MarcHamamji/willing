@@ -242,10 +242,12 @@ export const enrollmentSchema = zod.object({
   posting_id: zod.number().min(1, 'Posting ID is required'),
   message: zod.string().max(350, 'Your message is too long. Please limit it to 350 characters.').optional(),
   created_at: zod.date(),
+  is_done: zod.boolean(),
+  experience_vector: zod.unknown().optional(),
 });
 
 export type Enrollment = zod.infer<typeof enrollmentSchema>;
-export const newEnrollmentSchema = enrollmentSchema.omit({ id: true, created_at: true });
+export const newEnrollmentSchema = enrollmentSchema.omit({ id: true, created_at: true, experience_vector: true, is_done: true });
 
 export type EnrollmentTable = WithGeneratedIDAndCreatedAt<Enrollment>;
 
