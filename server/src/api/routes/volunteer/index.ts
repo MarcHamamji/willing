@@ -9,7 +9,10 @@ import resetPassword from '../../../auth/resetPassword.js';
 import config from '../../../config.js';
 import database from '../../../db/index.js';
 import { type VolunteerAccountWithoutPassword, newVolunteerAccountSchema, volunteerAccountSchema } from '../../../db/tables.js';
-import { recomputeVolunteerProfileVector } from '../../../services/embeddingUpdateService.js';
+import {
+  recomputeVolunteerExperienceVector,
+  recomputeVolunteerProfileVector,
+} from '../../../services/embeddingUpdateService.js';
 import { authorizeOnly } from '../../authorization.js';
 
 const volunteerRouter = Router();
@@ -17,6 +20,10 @@ const volunteerRouter = Router();
 const volunteerProfileUserUpdateSchema = volunteerAccountSchema.omit({
   id: true,
   password: true,
+  profile_vector: true,
+  experience_vector: true,
+  created_at: true,
+  updated_at: true,
 }).partial();
 
 const volunteerProfileUpdateSchema = volunteerProfileUserUpdateSchema.extend({
@@ -107,6 +114,7 @@ volunteerRouter.post('/create', async (req, res: Response<VolunteerCreateRespons
   }
 
   await recomputeVolunteerProfileVector(newVolunteer.id);
+  await recomputeVolunteerExperienceVector(newVolunteer.id);
 
   const token = await new jose.SignJWT({ id: newVolunteer.id, role: 'volunteer' })
     .setIssuedAt()
@@ -188,6 +196,7 @@ volunteerRouter.put('/profile', async (req, res: Response<VolunteerProfileRespon
     (body.first_name !== undefined && body.first_name !== existingVolunteer.first_name)
     || (body.last_name !== undefined && body.last_name !== existingVolunteer.last_name)
     || (body.gender !== undefined && body.gender !== existingVolunteer.gender)
+    || (body.cv_path !== undefined && body.cv_path !== existingVolunteer.cv_path)
     || (body.description !== undefined && body.description !== existingVolunteer.description)
     || didSkillsChange
   );

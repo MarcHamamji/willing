@@ -38,6 +38,7 @@ export type PostingEnrollment = {
   enrollment_id: number;
   volunteer_id: number;
   message: string | undefined;
+  attended: boolean;
   first_name: string;
   last_name: string;
   email: string;

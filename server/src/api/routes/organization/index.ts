@@ -15,6 +15,8 @@ const organizationProfileUpdateSchema = organizationAccountSchema.omit({
   id: true,
   password: true,
   org_vector: true,
+  created_at: true,
+  updated_at: true,
 }).partial().extend({
   email: zod.email('Invalid email').transform(val => val.toLowerCase().trim()).optional(),
 });

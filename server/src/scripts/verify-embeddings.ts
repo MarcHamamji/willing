@@ -7,6 +7,7 @@ import { EMBEDDING_DIMENSIONS } from '../services/embeddingService.js';
 import {
   recomputeOrganizationVector,
   recomputePostingVectors,
+  recomputeVolunteerExperienceVector,
   recomputeVolunteerProfileVector,
 } from '../services/embeddingUpdateService.js';
 
@@ -113,6 +114,31 @@ const ensureVolunteer = async () => {
   return inserted.id;
 };
 
+const ensureAttendedEnrollment = async (volunteerId: number, postingId: number) => {
+  const existing = await database
+    .selectFrom('enrollment')
+    .select('id')
+    .where('volunteer_id', '=', volunteerId)
+    .where('posting_id', '=', postingId)
+    .where('attended', '=', true)
+    .executeTakeFirst();
+
+  if (existing) return existing.id;
+
+  const inserted = await database
+    .insertInto('enrollment')
+    .values({
+      volunteer_id: volunteerId,
+      posting_id: postingId,
+      message: 'Embedding verification enrollment',
+      attended: true,
+    })
+    .returning('id')
+    .executeTakeFirstOrThrow();
+
+  return inserted.id;
+};
+
 const getVectorDims = async (query: ReturnType<typeof sql>) => {
   const result = await query.execute(database);
   return result.rows[0] as Record<string, number | null> | undefined;
@@ -166,6 +192,16 @@ async function verifyEmbeddings() {
   `);
   assertDim('volunteer_account.profile_vector', volunteerProfileDims?.profile_vector_dims);
   console.log('volunteer_account.profile_vector dims:', volunteerProfileDims?.profile_vector_dims);
+
+  await ensureAttendedEnrollment(volunteerId, postingId);
+  await recomputeVolunteerExperienceVector(volunteerId);
+  const volunteerExperienceDims = await getVectorDims(sql`
+    SELECT vector_dims(experience_vector) as experience_vector_dims
+    FROM volunteer_account
+    WHERE id = ${volunteerId}
+  `);
+  assertDim('volunteer_account.experience_vector', volunteerExperienceDims?.experience_vector_dims);
+  console.log('volunteer_account.experience_vector dims:', volunteerExperienceDims?.experience_vector_dims);
 
   console.log('Embedding verification completed successfully.');
 }

@@ -1,23 +1,29 @@
 import { Kysely, Transaction, sql } from 'kysely';
 
+import { extractCvText } from './cvTextService.js';
 import { runOrDeferEmbeddingJob } from './embeddingRateLimiter.js';
 import {
   combineVectors,
-  deterministicFallbackVector,
   embedText,
   parseVectorLiteral,
   vectorToSqlLiteral,
+  weightedAverage,
 } from './embeddingService.js';
 import database from '../db/index.js';
 import { Database } from '../db/tables.js';
 
 type DBExecutor = Kysely<Database> | Transaction<Database>;
 
-const updateOrganizationVector = async (orgId: number, vector: number[], executor: DBExecutor) => {
+const EXPERIENCE_VECTOR_MAX_ENROLLMENTS = 10;
+const EXPERIENCE_VECTOR_DECAY_LAMBDA = 0.35;
+
+const getRecencyRankWeight = (rank: number) => Math.exp(-EXPERIENCE_VECTOR_DECAY_LAMBDA * rank);
+
+const updateOrganizationVector = async (organizationId: number, vector: number[], executor: DBExecutor) => {
   await sql`
     UPDATE organization_account
     SET org_vector = ${vectorToSqlLiteral(vector)}::vector
-    WHERE id = ${orgId}
+    WHERE id = ${organizationId}
   `.execute(executor);
 };
 
@@ -40,6 +46,23 @@ const updateVolunteerProfileVector = async (volunteerId: number, profileVector: 
   await sql`
     UPDATE volunteer_account
     SET profile_vector = ${vectorToSqlLiteral(profileVector)}::vector
+    WHERE id = ${volunteerId}
+  `.execute(executor);
+};
+
+const updateVolunteerExperienceVector = async (volunteerId: number, experienceVector: number[] | null, executor: DBExecutor) => {
+  if (!experienceVector) {
+    await sql`
+      UPDATE volunteer_account
+      SET experience_vector = NULL
+      WHERE id = ${volunteerId}
+    `.execute(executor);
+    return;
+  }
+
+  await sql`
+    UPDATE volunteer_account
+    SET experience_vector = ${vectorToSqlLiteral(experienceVector)}::vector
     WHERE id = ${volunteerId}
   `.execute(executor);
 };
@@ -85,13 +108,28 @@ const buildVolunteerProfileText = (volunteer: {
   last_name: string;
   description: string | undefined;
   gender: 'male' | 'female' | 'other';
-}, skills: string[]) => {
+}, skills: string[], cvText: string | null) => {
   return [
     `Volunteer: ${volunteer.first_name} ${volunteer.last_name}`,
     `Gender: ${volunteer.gender}`,
     `Description: ${volunteer.description ?? ''}`,
     `Skills: ${skills.join(', ')}`,
+    `CV Text: ${cvText ?? ''}`,
   ].join('\n');
+};
+
+const recomputeVolunteerExperienceVectorsForPosting = async (postingId: number, executor: DBExecutor) => {
+  const volunteers = await executor
+    .selectFrom('enrollment')
+    .select('volunteer_id')
+    .where('posting_id', '=', postingId)
+    .where('attended', '=', true)
+    .execute();
+
+  const volunteerIds = Array.from(new Set(volunteers.map(volunteer => volunteer.volunteer_id)));
+  for (const volunteerId of volunteerIds) {
+    await recomputeVolunteerExperienceVector(volunteerId, executor);
+  }
 };
 
 export const recomputeOrganizationVector = async (organizationId: number, executor: DBExecutor = database) => {
@@ -113,10 +151,10 @@ export const recomputeOrganizationVector = async (organizationId: number, execut
   if (executor === database) {
     const result = await runOrDeferEmbeddingJob(`organization:${organizationId}:org_vector`, run);
     if (!result.executed) return null;
-    return computedVector;
+  } else {
+    await run();
   }
 
-  await run();
   return computedVector;
 };
 
@@ -158,33 +196,36 @@ export const recomputePostingVectors = async (postingId: number, executor: DBExe
       .where('posting_id', '=', posting.id)
       .execute();
 
-    const opportunityVector = await embedText(
-      buildPostingText(posting, skills.map(skill => skill.name)),
-    );
+    const opportunityVector = await embedText(buildPostingText(posting, skills.map(skill => skill.name)));
+    const organizationVector = await getOrganizationVectorOrCompute(posting.organization_id, executor);
 
-    const orgVector = await getOrganizationVectorOrCompute(posting.organization_id, executor);
-    const resolvedOrganizationVector = orgVector ?? deterministicFallbackVector(`organization:${posting.organization_id}:missing-org-vector`);
-    const postingContextVector = combineVectors(opportunityVector, resolvedOrganizationVector, 0.7, 0.3);
+    if (!organizationVector) {
+      console.warn(`[embeddings] Missing organization vector for posting ${posting.id}; posting_context_vector not updated.`);
+      return;
+    }
+
+    const postingContextVector = combineVectors(opportunityVector, organizationVector, 0.7, 0.3);
     await updatePostingVectors(posting.id, opportunityVector, postingContextVector, executor);
+    await recomputeVolunteerExperienceVectorsForPosting(posting.id, executor);
     resultVectors = { opportunityVector, postingContextVector };
   };
 
   if (executor === database) {
     const result = await runOrDeferEmbeddingJob(`posting:${postingId}:opportunity_vector`, run);
     if (!result.executed) return null;
-    return resultVectors;
+  } else {
+    await run();
   }
 
-  await run();
   return resultVectors;
 };
 
 export const recomputeVolunteerProfileVector = async (volunteerId: number, executor: DBExecutor = database) => {
-  let profileVector: number[] | null = null;
+  let computedProfileVector: number[] | null = null;
   const run = async () => {
     const volunteer = await executor
       .selectFrom('volunteer_account')
-      .select(['id', 'first_name', 'last_name', 'description', 'gender'])
+      .select(['id', 'first_name', 'last_name', 'description', 'gender', 'cv_path'])
       .where('id', '=', volunteerId)
       .executeTakeFirstOrThrow();
 
@@ -194,21 +235,58 @@ export const recomputeVolunteerProfileVector = async (volunteerId: number, execu
       .where('volunteer_id', '=', volunteer.id)
       .execute();
 
-    const nextProfileVector = await embedText(
-      buildVolunteerProfileText(volunteer, skills.map(skill => skill.name)),
-    );
-    await updateVolunteerProfileVector(volunteer.id, nextProfileVector, executor);
-    profileVector = nextProfileVector;
+    const cvText = await extractCvText(volunteer.cv_path);
+    const profileVector = await embedText(buildVolunteerProfileText(volunteer, skills.map(skill => skill.name), cvText));
+
+    await updateVolunteerProfileVector(volunteer.id, profileVector, executor);
+    computedProfileVector = profileVector;
   };
 
   if (executor === database) {
     const result = await runOrDeferEmbeddingJob(`volunteer:${volunteerId}:profile_vector`, run);
     if (!result.executed) return null;
-    return profileVector;
+  } else {
+    await run();
   }
 
-  await run();
-  return profileVector;
+  return computedProfileVector;
+};
+
+export const recomputeVolunteerExperienceVector = async (volunteerId: number, executor: DBExecutor = database) => {
+  const rows = await executor
+    .selectFrom('enrollment')
+    .innerJoin('organization_posting', 'organization_posting.id', 'enrollment.posting_id')
+    .select(['organization_posting.posting_context_vector'])
+    .where('enrollment.volunteer_id', '=', volunteerId)
+    .where('enrollment.attended', '=', true)
+    .orderBy('enrollment.created_at', 'desc')
+    .limit(EXPERIENCE_VECTOR_MAX_ENROLLMENTS)
+    .execute();
+
+  const vectors: number[][] = [];
+  const weights: number[] = [];
+
+  rows.forEach((row, index) => {
+    const parsed = parseVectorLiteral(row.posting_context_vector);
+    if (!parsed) return;
+    vectors.push(parsed);
+    weights.push(getRecencyRankWeight(index));
+  });
+
+  if (vectors.length === 0) {
+    if (rows.length === 0) {
+      console.info(`[embeddings] No attended experiences found for volunteer ${volunteerId}. Leaving experience_vector as NULL.`);
+    } else {
+      console.warn(`[embeddings] Attended enrollments exist for volunteer ${volunteerId}, but no valid posting_context_vector values were found.`);
+    }
+    await updateVolunteerExperienceVector(volunteerId, null, executor);
+    return null;
+  }
+
+  // More recent experiences receive higher rank-based weights.
+  const experienceVector = weightedAverage(vectors, weights);
+  await updateVolunteerExperienceVector(volunteerId, experienceVector, executor);
+  return experienceVector;
 };
 
 export const recomputePostingContextVectorsForOrganization = async (organizationId: number, executor: DBExecutor = database) => {
@@ -240,5 +318,15 @@ export const recomputePostingContextVectorsForOrganization = async (organization
       SET posting_context_vector = ${vectorToSqlLiteral(postingContextVector)}::vector
       WHERE id = ${posting.id}
     `.execute(executor);
+    await recomputeVolunteerExperienceVectorsForPosting(posting.id, executor);
   }
+};
+
+export const recomputeVolunteerVectors = async (volunteerId: number, executor: DBExecutor = database) => {
+  const [profileVector, experienceVector] = await Promise.all([
+    recomputeVolunteerProfileVector(volunteerId, executor),
+    recomputeVolunteerExperienceVector(volunteerId, executor),
+  ]);
+
+  return { profileVector, experienceVector };
 };

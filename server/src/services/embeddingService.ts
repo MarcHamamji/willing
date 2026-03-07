@@ -130,3 +130,10 @@ export const parseVectorLiteral = (value?: string | null) => {
   }
   return parts;
 };
+
+export const computeVolunteerOpportunityScore = (profileSimilarity: number, experienceSimilarity: number | null) => {
+  if (experienceSimilarity === null || Number.isNaN(experienceSimilarity)) {
+    return 0.6 * profileSimilarity;
+  }
+  return (0.6 * profileSimilarity) + (0.4 * experienceSimilarity);
+};

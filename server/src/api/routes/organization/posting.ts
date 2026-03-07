@@ -4,6 +4,7 @@ import zod from 'zod';
 import {
   OrganizationPostingApplicationAcceptanceResponse,
   OrganizationPostingApplicationRejectionResponse,
+  OrganizationPostingEnrollmentAttendanceUpdateResponse,
   OrganizationPostingApplicationsReponse,
   OrganizationPostingCreateResponse,
   OrganizationPostingDeleteResponse,
@@ -18,7 +19,10 @@ import {
   type NewOrganizationPosting,
   type PostingSkill,
 } from '../../../db/tables.js';
-import { recomputePostingVectors } from '../../../services/embeddingUpdateService.js';
+import {
+  recomputePostingVectors,
+  recomputeVolunteerExperienceVector,
+} from '../../../services/embeddingUpdateService.js';
 import {
   sendVolunteerApplicationAcceptedEmail,
   sendVolunteerApplicationRejectedEmail,
@@ -36,6 +40,9 @@ const areDatesEqual = (left: Date | undefined, right: Date | undefined) => (left
 
 const postingIdParamsSchema = zod.object({
   id: zod.coerce.number().int().positive('ID must be a positive number'),
+});
+const attendanceUpdateBodySchema = zod.object({
+  attended: zod.boolean(),
 });
 
 postingRouter.post('/', async (req, res: Response<OrganizationPostingCreateResponse>) => {
@@ -212,6 +219,48 @@ postingRouter.get('/:id/enrollments', async (req, res: Response<OrganizationPost
   res.json({ enrollments: enrollmentsWithSkills });
 });
 
+postingRouter.patch('/:id/enrollments/:enrollmentId/attendance', async (req, res: Response<OrganizationPostingEnrollmentAttendanceUpdateResponse>) => {
+  const orgId = req.userJWT!.id;
+  const { id: postingId, enrollmentId } = zod.object({
+    id: zod.coerce.number().int().positive(),
+    enrollmentId: zod.coerce.number().int().positive(),
+  }).parse(req.params);
+  const body = attendanceUpdateBodySchema.parse(req.body);
+
+  const posting = await database
+    .selectFrom('organization_posting')
+    .select(['id'])
+    .where('organization_posting.id', '=', postingId)
+    .where('organization_posting.organization_id', '=', orgId)
+    .executeTakeFirst();
+
+  if (!posting) {
+    res.status(404);
+    throw new Error('Posting not found');
+  }
+
+  const enrollment = await database
+    .selectFrom('enrollment')
+    .select(['id', 'volunteer_id', 'posting_id'])
+    .where('id', '=', enrollmentId)
+    .executeTakeFirst();
+
+  if (!enrollment || enrollment.posting_id !== postingId) {
+    res.status(404);
+    throw new Error('Enrollment not found');
+  }
+
+  await database
+    .updateTable('enrollment')
+    .set({ attended: body.attended })
+    .where('id', '=', enrollmentId)
+    .execute();
+
+  await recomputeVolunteerExperienceVector(enrollment.volunteer_id);
+
+  res.json({});
+});
+
 postingRouter.put('/:id', async (req, res: Response<OrganizationPostingUpdateResponse>) => {
   const orgId = req.userJWT!.id;
   const { id: postingId } = postingIdParamsSchema.parse(req.params);
@@ -338,12 +387,24 @@ postingRouter.delete('/:id', async (req, res: Response<OrganizationPostingDelete
     throw new Error('Posting not found');
   }
 
+  const impactedVolunteerRows = await database
+    .selectFrom('enrollment')
+    .select('volunteer_id')
+    .where('posting_id', '=', postingId)
+    .where('attended', '=', true)
+    .execute();
+
   await database.transaction().execute(async (trx) => {
     await trx.deleteFrom('posting_skill').where('posting_id', '=', postingId).execute();
     await trx.deleteFrom('enrollment_application').where('posting_id', '=', postingId).execute();
     await trx.deleteFrom('enrollment').where('posting_id', '=', postingId).execute();
     await trx.deleteFrom('organization_posting').where('id', '=', postingId).execute();
   });
+
+  const impactedVolunteerIds = Array.from(new Set(impactedVolunteerRows.map(row => row.volunteer_id)));
+  for (const volunteerId of impactedVolunteerIds) {
+    await recomputeVolunteerExperienceVector(volunteerId);
+  }
 
   res.json({});
 });
