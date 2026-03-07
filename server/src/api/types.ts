@@ -1,4 +1,5 @@
 export * from './routes/user.types.js';
+export * from './routes/public.types.js';
 
 export * from './routes/admin/index.types.js';
 

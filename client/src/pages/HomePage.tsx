@@ -7,7 +7,7 @@ import Footer from '../components/layout/Footer';
 import Navbar from '../components/layout/navbars/EmptyNavbar';
 import requestServer from '../utils/requestServer';
 
-import type { UserHomeStatsResponse } from '../../../server/src/api/types';
+import type { PublicHomeStatsResponse } from '../../../server/src/api/types';
 
 function HomePage() {
   const auth = useContext(AuthContext);
@@ -20,7 +20,7 @@ function HomePage() {
 
     const fetchStats = async () => {
       try {
-        const res = await requestServer<UserHomeStatsResponse>('/user/home-stats', {});
+        const res = await requestServer<PublicHomeStatsResponse>('/public/home-stats', {});
 
         if (!isMounted)
           return;

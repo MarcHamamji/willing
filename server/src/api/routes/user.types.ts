@@ -10,9 +10,3 @@ export type UserLoginResponse = {
 export type UserForgotPasswordResponse = object;
 
 export type UserForgotPasswordResetResponse = object;
-
-export type UserHomeStatsResponse = {
-  totalOpportunities: number;
-  totalOrganizations: number;
-  totalVolunteers: number;
-};
