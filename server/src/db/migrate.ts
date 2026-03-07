@@ -58,16 +58,21 @@ export async function migrateToLatest() {
   }
 }
 
-if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
-  migrateToLatest()
-    .then(async () => {
-      console.log('All migrations completed successfully');
-      await database.destroy();
-      process.exit(0);
-    })
-    .catch(async (error) => {
-      console.error('Migration failed:', error);
-      await database.destroy();
+const runAsScript = async () => {
+  try {
+    await migrateToLatest();
+  } finally {
+    await database.destroy();
+  }
+};
+
+if (process.argv[1]) {
+  const currentFile = fileURLToPath(import.meta.url);
+  const entryFile = path.resolve(process.argv[1]);
+  if (currentFile === entryFile) {
+    runAsScript().catch((error) => {
+      console.error(error);
       process.exit(1);
     });
+  }
 }

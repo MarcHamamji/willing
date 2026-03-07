@@ -4,6 +4,7 @@ import zod from 'zod';
 import { VolunteerPostingEnrollResponse, VolunteerPostingResponse, VolunteerPostingSearchResponse, VolunteerPostingWithdrawResponse } from './posting.types.js';
 import database from '../../../db/index.js';
 import { Enrollment, EnrollmentApplication } from '../../../db/tables.js';
+import { recomputeVolunteerExperienceVector } from '../../../services/embeddingUpdateService.js';
 import { authorizeOnly } from '../../authorization.js';
 
 const volunteerPostingRouter = Router();
@@ -206,7 +207,7 @@ volunteerPostingRouter.post('/:id/enroll', async (req, res: Response<VolunteerPo
         volunteer_id: volunteerId,
         posting_id: id,
         message: message ?? undefined,
-        is_done: false,
+        attended: false,
       })
       .returningAll()
       .executeTakeFirst();
@@ -245,6 +246,13 @@ volunteerPostingRouter.delete('/:id/enroll', async (req, res: Response<Volunteer
     throw new Error('Posting not found');
   }
 
+  const existingEnrollment = await database
+    .selectFrom('enrollment')
+    .select(['id', 'attended'])
+    .where('volunteer_id', '=', volunteerId)
+    .where('posting_id', '=', id)
+    .executeTakeFirst();
+
   await Promise.all([
     database
       .deleteFrom('enrollment')
@@ -257,6 +265,10 @@ volunteerPostingRouter.delete('/:id/enroll', async (req, res: Response<Volunteer
       .where('posting_id', '=', id)
       .execute(),
   ]);
+
+  if (existingEnrollment?.attended) {
+    await recomputeVolunteerExperienceVector(volunteerId);
+  }
 
   res.json({});
 });

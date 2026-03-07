@@ -1,4 +1,4 @@
-import bcrypt from 'bcrypt';
+﻿import bcrypt from 'bcrypt';
 import { sql } from 'kysely';
 
 import config from '../config.js';
@@ -470,117 +470,101 @@ async function seed() {
       volunteer_id: volByEmail.get('vol1@willing.com')!,
       posting_id: postingByTitle.get('Food Packing')!,
       message: 'Comfortable with packing tasks and working in a team.',
-      is_done: true,
-      experience_vector: null,
+      attended: true,
     },
     {
       volunteer_id: volByEmail.get('vol1@willing.com')!,
       posting_id: postingByTitle.get('Beach Cleanup')!,
       message: 'Can help with cleanup, lifting, and staying organized during the event.',
-      is_done: false,
-      experience_vector: null,
+      attended: false,
     },
     {
       volunteer_id: volByEmail.get('vol2@willing.com')!,
       posting_id: postingByTitle.get('Tutor Kids')!,
       message: 'Enjoy helping students with homework and explaining things clearly.',
-      is_done: true,
-      experience_vector: null,
+      attended: true,
     },
     {
       volunteer_id: volByEmail.get('vol2@willing.com')!,
       posting_id: postingByTitle.get('Library Reading Hour')!,
       message: 'Happy to read with children and keep them engaged during activities.',
-      is_done: false,
-      experience_vector: null,
+      attended: false,
     },
     {
       volunteer_id: volByEmail.get('vol3@willing.com')!,
       posting_id: postingByTitle.get('Community Kitchen')!,
       message: 'Can support with food prep, serving, and keeping the space clean.',
-      is_done: true,
-      experience_vector: null,
+      attended: true,
     },
     {
       volunteer_id: volByEmail.get('vol3@willing.com')!,
       posting_id: postingByTitle.get('Winter Clothes Drive')!,
       message: 'Good with sorting items and helping maintain order during distribution.',
-      is_done: false,
-      experience_vector: null,
+      attended: false,
     },
     {
       volunteer_id: volByEmail.get('vol4@willing.com')!,
       posting_id: postingByTitle.get('Elder Visit')!,
       message: 'Patient, communicative, and comfortable spending time with elderly residents.',
-      is_done: true,
-      experience_vector: null,
+      attended: true,
     },
     {
       volunteer_id: volByEmail.get('vol4@willing.com')!,
       posting_id: postingByTitle.get('Sort Donations')!,
       message: 'Can help sort donations carefully and keep sections organized.',
-      is_done: false,
-      experience_vector: null,
+      attended: false,
     },
     {
       volunteer_id: volByEmail.get('vol5@willing.com')!,
       posting_id: postingByTitle.get('Homework Hotline')!,
       message: 'Confident supporting students remotely with reading and homework structure.',
-      is_done: true,
-      experience_vector: null,
+      attended: true,
     },
     {
       volunteer_id: volByEmail.get('vol5@willing.com')!,
       posting_id: postingByTitle.get('Tutor Kids')!,
       message: 'Would be happy to help younger students stay focused and understand tasks.',
-      is_done: false,
-      experience_vector: null,
+      attended: false,
     },
     {
       volunteer_id: volByEmail.get('vol6@willing.com')!,
       posting_id: postingByTitle.get('Medical Supply Sorting')!,
       message: 'Strong attention to detail and comfortable handling sorted supplies accurately.',
-      is_done: true,
-      experience_vector: null,
+      attended: true,
     },
     {
       volunteer_id: volByEmail.get('vol6@willing.com')!,
       posting_id: postingByTitle.get('Beach Cleanup')!,
       message: 'Can handle physically demanding outdoor tasks and work well in a coordinated team.',
-      is_done: false,
-      experience_vector: null,
+      attended: false,
     },
     {
       volunteer_id: volByEmail.get('vol7@willing.com')!,
       posting_id: postingByTitle.get('Community Kitchen')!,
       message: 'Happy to assist with prep, serving, and keeping the workflow smooth.',
-      is_done: true,
-      experience_vector: null,
+      attended: true,
     },
     {
       volunteer_id: volByEmail.get('vol7@willing.com')!,
       posting_id: postingByTitle.get('Homework Hotline')!,
       message: 'Can listen carefully to students and help them work through problems step by step.',
-      is_done: false,
-      experience_vector: null,
+      attended: false,
     },
     {
       volunteer_id: volByEmail.get('vol8@willing.com')!,
       posting_id: postingByTitle.get('Food Packing')!,
       message: 'Comfortable with repetitive tasks, packing, and keeping materials organized.',
-      is_done: true,
-      experience_vector: null,
+      attended: true,
     },
     {
       volunteer_id: volByEmail.get('vol8@willing.com')!,
       posting_id: postingByTitle.get('Winter Clothes Drive')!,
       message: 'Can sort, fold, and organize donated items efficiently.',
-      is_done: false,
-      experience_vector: null,
+      attended: false,
     },
   ]).execute();
 
-  console.log('✅ Seed complete.');
+  console.log('Seed complete.');
   console.log('Login creds (same password for all):', PASSWORD_PLAIN);
   console.log('Admin:', 'admin@willing.com');
   console.log('Orgs:', 'org1@willing.com', 'org2@willing.com', 'org3@willing.com');
@@ -599,7 +583,7 @@ async function seed() {
 }
 
 seed().catch(async (err) => {
-  console.error('❌ Seed failed:', err);
+  console.error('Seed failed:', err);
   try {
     await database.destroy();
   } catch (_error) {

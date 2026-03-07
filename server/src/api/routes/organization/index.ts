@@ -5,11 +5,22 @@ import { OrganizationMeResponse, OrganizationProfileResponse, OrganizationReques
 import postingRouter from './posting.js';
 import resetPassword from '../../../auth/resetPassword.js';
 import database from '../../../db/index.js';
-import { newOrganizationRequestSchema, PostingSkill } from '../../../db/tables.js';
+import { newOrganizationRequestSchema, organizationAccountSchema, PostingSkill } from '../../../db/tables.js';
+import { recomputeOrganizationVector } from '../../../services/embeddingUpdateService.js';
 import { sendAdminOrganizationRequestEmail } from '../../../SMTP/emails.js';
 import { authorizeOnly } from '../../authorization.js';
 
 const organizationRouter = Router();
+const organizationProfileUpdateSchema = organizationAccountSchema.omit({
+  id: true,
+  password: true,
+  email: true,
+  org_vector: true,
+  created_at: true,
+  updated_at: true,
+}).partial();
+
+const isSameNullableNumber = (left: number | undefined, right: number | undefined) => (left ?? null) === (right ?? null);
 
 organizationRouter.post('/request', async (req, res: Response<OrganizationRequestResponse>) => {
   const body = newOrganizationRequestSchema.parse(req.body);
@@ -134,6 +145,53 @@ organizationRouter.get('/me', async (req, res: Response<OrganizationMeResponse>)
     .selectFrom('organization_account')
     .selectAll()
     .where('id', '=', req.userJWT!.id)
+    .executeTakeFirstOrThrow();
+
+  // @ts-expect-error: do not return the password
+  delete organization.password;
+
+  res.json({ organization });
+});
+
+organizationRouter.put('/profile', async (req, res) => {
+  const body = organizationProfileUpdateSchema.parse(req.body);
+  const organizationId = req.userJWT!.id;
+  const existingOrganization = await database
+    .selectFrom('organization_account')
+    .select([
+      'name',
+      'url',
+      'location_name',
+      'latitude',
+      'longitude',
+    ])
+    .where('id', '=', organizationId)
+    .executeTakeFirstOrThrow();
+
+  const shouldRecomputeOrganizationVector = (
+    (body.name !== undefined && body.name !== existingOrganization.name)
+    || (body.url !== undefined && body.url !== existingOrganization.url)
+    || (body.location_name !== undefined && body.location_name !== existingOrganization.location_name)
+    || (body.latitude !== undefined && !isSameNullableNumber(body.latitude, existingOrganization.latitude))
+    || (body.longitude !== undefined && !isSameNullableNumber(body.longitude, existingOrganization.longitude))
+  );
+
+  if (Object.keys(body).length > 0) {
+    await database
+      .updateTable('organization_account')
+      .set(body)
+      .where('id', '=', organizationId)
+      .execute();
+  }
+
+  if (shouldRecomputeOrganizationVector) {
+    await recomputeOrganizationVector(organizationId);
+  }
+
+  const organization = await database
+    .selectFrom('organization_account')
+    .selectAll()
+    .where('id', '=', organizationId)
     .executeTakeFirstOrThrow();
 
   // @ts-expect-error: do not return the password

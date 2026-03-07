@@ -59,12 +59,13 @@ async function startServer() {
     process.exit(1);
   }
 
-  app.listen(config.SERVER_PORT, (error?: Error) => {
-    if (error) {
-      console.error('Failed to start server');
-    } else {
-      console.log('Listening on port ' + config.SERVER_PORT);
-    }
+  const server = app.listen(config.SERVER_PORT, () => {
+    console.log('Listening on port ' + config.SERVER_PORT);
+  });
+
+  server.on('error', (error) => {
+    console.error(`Failed to start server on port ${config.SERVER_PORT}:`, error.message);
+    process.exit(1);
   });
 }
 

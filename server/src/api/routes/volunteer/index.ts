@@ -9,6 +9,10 @@ import resetPassword from '../../../auth/resetPassword.js';
 import config from '../../../config.js';
 import database from '../../../db/index.js';
 import { type VolunteerAccountWithoutPassword, newVolunteerAccountSchema, volunteerAccountSchema } from '../../../db/tables.js';
+import {
+  recomputeVolunteerExperienceVector,
+  recomputeVolunteerProfileVector,
+} from '../../../services/embeddingUpdateService.js';
 import { authorizeOnly } from '../../authorization.js';
 
 const volunteerRouter = Router();
@@ -16,11 +20,23 @@ const volunteerRouter = Router();
 const volunteerProfileUserUpdateSchema = volunteerAccountSchema.omit({
   id: true,
   password: true,
+  profile_vector: true,
+  experience_vector: true,
+  created_at: true,
+  updated_at: true,
 }).partial();
 
 const volunteerProfileUpdateSchema = volunteerProfileUserUpdateSchema.extend({
   skills: zod.array(zod.string().trim().min(1, 'Skill cannot be empty')).optional(),
 });
+
+const normalizeSkillList = (skills: string[]) =>
+  Array.from(new Set(skills.map(skill => skill.trim()).filter(Boolean))).sort();
+
+const areSkillListsEqual = (left: string[], right: string[]) => {
+  if (left.length !== right.length) return false;
+  return left.every((skill, index) => skill === right[index]);
+};
 
 const getVolunteerProfile = async (volunteerId: number): Promise<VolunteerProfileResponse> => {
   const volunteer = await database
@@ -32,6 +48,7 @@ const getVolunteerProfile = async (volunteerId: number): Promise<VolunteerProfil
       'email',
       'date_of_birth',
       'gender',
+      'cv_path',
       'description',
       'privacy',
     ])
@@ -54,6 +71,7 @@ const getVolunteerProfile = async (volunteerId: number): Promise<VolunteerProfil
       date_of_birth: volunteer.date_of_birth,
       gender: volunteer.gender,
       privacy: volunteer.privacy,
+      ...(volunteer.cv_path !== undefined ? { cv_path: volunteer.cv_path } : {}),
       ...(volunteer.description !== undefined ? { description: volunteer.description } : {}),
     },
     skills: volunteerSkills.map(skill => skill.name),
@@ -95,6 +113,9 @@ volunteerRouter.post('/create', async (req, res: Response<VolunteerCreateRespons
     throw new Error('Failed to create volunteer');
   }
 
+  await recomputeVolunteerProfileVector(newVolunteer.id);
+  await recomputeVolunteerExperienceVector(newVolunteer.id);
+
   const token = await new jose.SignJWT({ id: newVolunteer.id, role: 'volunteer' })
     .setIssuedAt()
     .setProtectedHeader({ alg: 'HS256' })
@@ -130,20 +151,55 @@ volunteerRouter.get('/profile', async (req, res: Response<VolunteerProfileRespon
 volunteerRouter.put('/profile', async (req, res: Response<VolunteerProfileResponse>) => {
   const body = volunteerProfileUpdateSchema.parse(req.body);
   const volunteerId = req.userJWT!.id;
+  const existingVolunteer = await database
+    .selectFrom('volunteer_account')
+    .select([
+      'first_name',
+      'last_name',
+      'email',
+      'date_of_birth',
+      'gender',
+      'cv_path',
+      'description',
+      'privacy',
+    ])
+    .where('id', '=', volunteerId)
+    .executeTakeFirstOrThrow();
+
+  const existingSkills = await database
+    .selectFrom('volunteer_skill')
+    .select('name')
+    .where('volunteer_id', '=', volunteerId)
+    .execute();
 
   if (body.email !== undefined) {
-    const existingVolunteer = await database
+    const duplicateVolunteer = await database
       .selectFrom('volunteer_account')
       .select('id')
       .where('email', '=', body.email)
       .where('id', '!=', volunteerId)
       .executeTakeFirst();
 
-    if (existingVolunteer) {
+    if (duplicateVolunteer) {
       res.status(409);
       throw new Error('Another account already uses this email');
     }
   }
+
+  const normalizedExistingSkills = normalizeSkillList(existingSkills.map(skill => skill.name));
+  const normalizedIncomingSkills = body.skills !== undefined ? normalizeSkillList(body.skills) : undefined;
+  const didSkillsChange = normalizedIncomingSkills !== undefined
+    ? !areSkillListsEqual(normalizedIncomingSkills, normalizedExistingSkills)
+    : false;
+
+  const shouldRecomputeProfileVector = (
+    (body.first_name !== undefined && body.first_name !== existingVolunteer.first_name)
+    || (body.last_name !== undefined && body.last_name !== existingVolunteer.last_name)
+    || (body.gender !== undefined && body.gender !== existingVolunteer.gender)
+    || (body.cv_path !== undefined && body.cv_path !== existingVolunteer.cv_path)
+    || (body.description !== undefined && body.description !== existingVolunteer.description)
+    || didSkillsChange
+  );
 
   await database.transaction().execute(async (trx) => {
     const volunteerUpdate: Partial<Omit<VolunteerAccountWithoutPassword, 'id'>> = {};
@@ -153,6 +209,7 @@ volunteerRouter.put('/profile', async (req, res: Response<VolunteerProfileRespon
     if (body.email !== undefined) volunteerUpdate.email = body.email;
     if (body.date_of_birth !== undefined) volunteerUpdate.date_of_birth = body.date_of_birth;
     if (body.gender !== undefined) volunteerUpdate.gender = body.gender;
+    if (body.cv_path !== undefined) volunteerUpdate.cv_path = body.cv_path;
     if (body.description !== undefined) volunteerUpdate.description = body.description;
     if (body.privacy !== undefined) volunteerUpdate.privacy = body.privacy;
 
@@ -164,20 +221,16 @@ volunteerRouter.put('/profile', async (req, res: Response<VolunteerProfileRespon
         .execute();
     }
 
-    if (body.skills !== undefined) {
-      const normalizedSkills = Array.from(
-        new Set(body.skills.map(skill => skill.trim()).filter(Boolean)),
-      );
-
+    if (didSkillsChange) {
       await trx
         .deleteFrom('volunteer_skill')
         .where('volunteer_id', '=', volunteerId)
         .execute();
 
-      if (normalizedSkills.length > 0) {
+      if (normalizedIncomingSkills && normalizedIncomingSkills.length > 0) {
         await trx
           .insertInto('volunteer_skill')
-          .values(normalizedSkills.map(name => ({
+          .values(normalizedIncomingSkills.map(name => ({
             volunteer_id: volunteerId,
             name,
           })))
@@ -185,6 +238,10 @@ volunteerRouter.put('/profile', async (req, res: Response<VolunteerProfileRespon
       }
     }
   });
+
+  if (shouldRecomputeProfileVector) {
+    await recomputeVolunteerProfileVector(volunteerId);
+  }
 
   const profile = await getVolunteerProfile(volunteerId);
   res.json(profile);

@@ -7,6 +7,7 @@ import { AdminLoginResponse, AdminMeResponse, AdminOrganizationRequestReviewResp
 import resetPassword from '../../../auth/resetPassword.js';
 import config from '../../../config.js';
 import database from '../../../db/index.js';
+import { recomputeOrganizationVector } from '../../../services/embeddingUpdateService.js';
 import { sendOrganizationAcceptanceEmail, sendOrganizationRejectionEmail } from '../../../SMTP/emails.js';
 import { loginInfoSchema } from '../../../types.js';
 import { authorizeOnly } from '../../authorization.js';
@@ -127,6 +128,13 @@ adminRouter.post('/reviewOrganizationRequest', async (req, res: Response<AdminOr
       .returningAll()
       .executeTakeFirst();
   });
+
+  if (!insertedOrganization) {
+    res.status(500);
+    throw new Error('Failed to create organization account');
+  }
+
+  await recomputeOrganizationVector(insertedOrganization.id);
 
   await sendOrganizationAcceptanceEmail(organizationRequest, password);
 
