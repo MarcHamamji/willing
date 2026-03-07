@@ -1,8 +1,10 @@
 import { Kysely, PostgresDialect } from 'kysely';
-import { Pool } from 'pg';
+import { Pool, types } from 'pg';
 
 import { Database } from './tables.js';
 import config from '../config.js';
+
+types.setTypeParser(types.builtins.NUMERIC, Number);
 
 const dialect = new PostgresDialect({
   pool: new Pool({
