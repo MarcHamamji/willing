@@ -39,22 +39,46 @@ volunteerPostingRouter.get('/', async (req, res: Response<VolunteerPostingSearch
     );
   }
 
+  let parsedStart: Date | undefined;
+  let parsedEnd: Date | undefined;
+
   if (start_timestamp) {
-    query = query.where(
-      'organization_posting.start_timestamp',
-      '>=',
-      new Date(start_timestamp as string),
-    );
+    const s = start_timestamp as string;
+    parsedStart = /^\d{4}-\d{2}-\d{2}$/.test(s)
+      ? new Date(`${s}T00:00:00`)
+      : new Date(s);
   }
 
   if (end_timestamp) {
-    query = query.where(
-      'organization_posting.end_timestamp',
-      '<=',
-      new Date(end_timestamp as string),
-    );
+    const e = end_timestamp as string;
+    parsedEnd = /^\d{4}-\d{2}-\d{2}$/.test(e)
+      ? new Date(`${e}T23:59:59.999`)
+      : new Date(e);
   }
 
+  if (parsedStart && parsedEnd) {
+    query = query.where(qu =>
+      qu.and([
+        qu('organization_posting.start_timestamp', '<=', parsedEnd),
+        qu.or([
+          qu('organization_posting.end_timestamp', '>=', parsedStart),
+          qu('organization_posting.end_timestamp', 'is', null),
+        ]),
+      ]),
+    );
+  } else {
+    if (parsedStart) {
+      query = query.where(
+        'organization_posting.start_timestamp',
+        '>=',
+        parsedStart,
+      );
+    }
+
+    if (parsedEnd) {
+      query = query.where('organization_posting.end_timestamp', '<=', parsedEnd);
+    }
+  }
   const postings = await query
     .orderBy('organization_posting.start_timestamp', 'asc')
     .execute();
@@ -182,6 +206,7 @@ volunteerPostingRouter.post('/:id/enroll', async (req, res: Response<VolunteerPo
         volunteer_id: volunteerId,
         posting_id: id,
         message: message ?? undefined,
+        is_done: false,
       })
       .returningAll()
       .executeTakeFirst();

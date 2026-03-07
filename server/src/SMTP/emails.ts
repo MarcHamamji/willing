@@ -82,3 +82,38 @@ export async function sendAdminOrganizationRequestEmail(
     text,
   });
 }
+export async function sendVolunteerApplicationAcceptedEmail(opts: {
+  volunteerEmail: string;
+  volunteerName: string;
+  organizationName: string;
+  postingTitle: string;
+}) {
+  const subject = 'Your volunteering application was accepted';
+
+  const text
+    = `Hello ${opts.volunteerName},\n\n`
+      + 'Good news. Your application for the volunteering position below was accepted.\n\n'
+      + `Organization: ${opts.organizationName}\n`
+      + `Position: ${opts.postingTitle}\n\n`
+      + `Willing Team`;
+
+  await sendEmail({ to: opts.volunteerEmail, subject, text });
+}
+
+export async function sendVolunteerApplicationRejectedEmail(opts: {
+  volunteerEmail: string;
+  volunteerName: string;
+  organizationName: string;
+  postingTitle: string;
+}) {
+  const subject = 'Your volunteering application was not accepted';
+
+  const text
+    = `Hello ${opts.volunteerName},\n\n`
+      + 'Your application for the volunteering position below was not accepted.\n\n'
+      + `Organization: ${opts.organizationName}\n`
+      + `Position: ${opts.postingTitle}\n\n`
+      + `Willing Team`;
+
+  await sendEmail({ to: opts.volunteerEmail, subject, text });
+}
