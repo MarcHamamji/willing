@@ -177,7 +177,7 @@ postingRouter.get('/:id/enrollments', async (req, res: Response<OrganizationPost
       'enrollment.id as enrollment_id',
       'enrollment.volunteer_id',
       'enrollment.message',
-      'enrollment.is_done',
+      'enrollment.attended',
       'volunteer_account.first_name',
       'volunteer_account.last_name',
       'volunteer_account.email',
@@ -483,7 +483,7 @@ postingRouter.post('/:id/applications/:applicationId/accept', async (req, res: R
         volunteer_id: application.volunteer_id,
         posting_id: application.posting_id,
         message: application.message ?? undefined,
-        is_done: false,
+        attended: false,
       })
       .returningAll()
       .executeTakeFirst();
