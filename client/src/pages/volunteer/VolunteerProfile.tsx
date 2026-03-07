@@ -25,7 +25,15 @@ import type { VolunteerProfileResponse } from '../../../../server/src/api/types'
 
 const DESCRIPTION_MAX_LENGTH = 300;
 
-const profileFormSchema = volunteerAccountSchema.omit({ id: true, password: true })
+const profileFormSchema = volunteerAccountSchema.omit({
+  id: true,
+  password: true,
+  email: true,
+  profile_vector: true,
+  experience_vector: true,
+  created_at: true,
+  updated_at: true,
+})
   .extend({
     description: z.string().max(DESCRIPTION_MAX_LENGTH, `Description must be at most ${DESCRIPTION_MAX_LENGTH} characters`),
   });
@@ -55,7 +63,6 @@ function VolunteerProfile() {
     defaultValues: {
       first_name: '',
       last_name: '',
-      email: '',
       date_of_birth: '',
       gender: 'male',
       description: '',
@@ -73,7 +80,6 @@ function VolunteerProfile() {
       form.reset({
         first_name: response.volunteer.first_name,
         last_name: response.volunteer.last_name,
-        email: response.volunteer.email,
         date_of_birth: getDateInputValue(response.volunteer.date_of_birth),
         gender: response.volunteer.gender,
         description: response.volunteer.description ?? '',
@@ -163,7 +169,6 @@ function VolunteerProfile() {
           body: {
             first_name: data.first_name,
             last_name: data.last_name,
-            email: data.email,
             date_of_birth: data.date_of_birth,
             gender: data.gender,
             description: data.description,
@@ -179,7 +184,6 @@ function VolunteerProfile() {
       form.reset({
         first_name: response.volunteer.first_name,
         last_name: response.volunteer.last_name,
-        email: response.volunteer.email,
         date_of_birth: getDateInputValue(response.volunteer.date_of_birth),
         gender: response.volunteer.gender,
         description: response.volunteer.description ?? '',
@@ -199,7 +203,6 @@ function VolunteerProfile() {
     form.reset({
       first_name: profile.volunteer.first_name,
       last_name: profile.volunteer.last_name,
-      email: profile.volunteer.email,
       date_of_birth: getDateInputValue(profile.volunteer.date_of_birth),
       gender: profile.volunteer.gender,
       description: profile.volunteer.description ?? '',
@@ -355,7 +358,13 @@ function VolunteerProfile() {
                             />
                           </div>
                           <div className={saving ? 'pointer-events-none opacity-70' : ''}>
-                            <FormField form={form} name="email" label="Email" type="email" Icon={Mail} />
+                            <div className="space-y-1">
+                              <label className="text-sm font-medium">Email</label>
+                              <div className="input input-bordered w-full flex items-center gap-2 opacity-80">
+                                <Mail size={16} />
+                                <span className="truncate">{profile.volunteer.email}</span>
+                              </div>
+                            </div>
                           </div>
                           <div className={saving ? 'pointer-events-none opacity-70' : ''}>
                             <FormField form={form} name="date_of_birth" label="Date of Birth" type="date" Icon={Calendar} />
@@ -369,7 +378,7 @@ function VolunteerProfile() {
                               <Mail size={14} />
                               Email
                             </span>
-                            <span className="font-medium text-right break-all">{formValues.email}</span>
+                            <span className="font-medium text-right break-all">{profile.volunteer.email}</span>
                           </div>
                           <div className="flex items-center justify-between gap-2">
                             <span className="opacity-70 flex items-center gap-2">

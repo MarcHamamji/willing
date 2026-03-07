@@ -20,6 +20,7 @@ const volunteerRouter = Router();
 const volunteerProfileUserUpdateSchema = volunteerAccountSchema.omit({
   id: true,
   password: true,
+  email: true,
   profile_vector: true,
   experience_vector: true,
   created_at: true,
@@ -172,20 +173,6 @@ volunteerRouter.put('/profile', async (req, res: Response<VolunteerProfileRespon
     .where('volunteer_id', '=', volunteerId)
     .execute();
 
-  if (body.email !== undefined) {
-    const duplicateVolunteer = await database
-      .selectFrom('volunteer_account')
-      .select('id')
-      .where('email', '=', body.email)
-      .where('id', '!=', volunteerId)
-      .executeTakeFirst();
-
-    if (duplicateVolunteer) {
-      res.status(409);
-      throw new Error('Another account already uses this email');
-    }
-  }
-
   const normalizedExistingSkills = normalizeSkillList(existingSkills.map(skill => skill.name));
   const normalizedIncomingSkills = body.skills !== undefined ? normalizeSkillList(body.skills) : undefined;
   const didSkillsChange = normalizedIncomingSkills !== undefined
@@ -206,7 +193,6 @@ volunteerRouter.put('/profile', async (req, res: Response<VolunteerProfileRespon
 
     if (body.first_name !== undefined) volunteerUpdate.first_name = body.first_name;
     if (body.last_name !== undefined) volunteerUpdate.last_name = body.last_name;
-    if (body.email !== undefined) volunteerUpdate.email = body.email;
     if (body.date_of_birth !== undefined) volunteerUpdate.date_of_birth = body.date_of_birth;
     if (body.gender !== undefined) volunteerUpdate.gender = body.gender;
     if (body.cv_path !== undefined) volunteerUpdate.cv_path = body.cv_path;
