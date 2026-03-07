@@ -1,9 +1,11 @@
 import { Router, Response } from 'express';
+import { sql } from 'kysely';
 import zod from 'zod';
 
 import { VolunteerPostingEnrollResponse, VolunteerPostingResponse, VolunteerPostingSearchResponse, VolunteerPostingWithdrawResponse } from './posting.types.js';
 import database from '../../../db/index.js';
 import { Enrollment, EnrollmentApplication } from '../../../db/tables.js';
+import { parseVectorLiteral } from '../../../services/embeddingService.js';
 import { recomputeVolunteerExperienceVector } from '../../../services/embeddingUpdateService.js';
 import { authorizeOnly } from '../../authorization.js';
 
@@ -20,7 +22,20 @@ const applyBodySchema = zod.object({
 volunteerPostingRouter.use(authorizeOnly('volunteer'));
 
 volunteerPostingRouter.get('/', async (req, res: Response<VolunteerPostingSearchResponse>) => {
+  const volunteerId = req.userJWT!.id;
   const { location_name, start_timestamp, end_timestamp, skill } = req.query;
+  const skillFilter = typeof skill === 'string' ? skill.trim() : '';
+
+  const volunteerVectors = await database
+    .selectFrom('volunteer_account')
+    .select(['profile_vector', 'experience_vector'])
+    .where('id', '=', volunteerId)
+    .executeTakeFirstOrThrow();
+
+  const profileVectorLiteral = volunteerVectors.profile_vector;
+  const experienceVectorLiteral = volunteerVectors.experience_vector;
+  const hasProfileVector = parseVectorLiteral(profileVectorLiteral) !== null;
+  const hasExperienceVector = parseVectorLiteral(experienceVectorLiteral) !== null;
 
   let query = database
     .selectFrom('organization_posting')
@@ -31,6 +46,15 @@ volunteerPostingRouter.get('/', async (req, res: Response<VolunteerPostingSearch
     )
     .selectAll('organization_posting')
     .select(['organization_account.name as organization_name']);
+
+  if (skillFilter) {
+    query = query.where(({ exists, selectFrom }) => exists(
+      selectFrom('posting_skill')
+        .select('posting_skill.id')
+        .whereRef('posting_skill.posting_id', '=', 'organization_posting.id')
+        .where('posting_skill.name', 'ilike', `%${skillFilter}%`),
+    ));
+  }
 
   if (location_name) {
     query = query.where(
@@ -80,9 +104,36 @@ volunteerPostingRouter.get('/', async (req, res: Response<VolunteerPostingSearch
       query = query.where('organization_posting.end_timestamp', '<=', parsedEnd);
     }
   }
-  const postings = await query
-    .orderBy('organization_posting.start_timestamp', 'asc')
-    .execute();
+
+  if (hasProfileVector && profileVectorLiteral) {
+    const profileSimilarity = sql<number>`
+      1 - (organization_posting.opportunity_vector <=> ${profileVectorLiteral}::vector)
+    `;
+
+    if (hasExperienceVector && experienceVectorLiteral) {
+      const experienceSimilarity = sql<number>`
+        1 - (organization_posting.opportunity_vector <=> ${experienceVectorLiteral}::vector)
+      `;
+      const finalScore = sql<number>`(0.6 * ${profileSimilarity}) + (0.4 * ${experienceSimilarity})`;
+
+      query = query.orderBy(sql`${finalScore} desc nulls last`);
+    } else {
+      const profileOnlyScore = sql<number>`0.6 * ${profileSimilarity}`;
+      query = query.orderBy(sql`${profileOnlyScore} desc nulls last`);
+    }
+
+    query = query.orderBy('organization_posting.start_timestamp', 'asc');
+  } else {
+    if (!hasProfileVector && hasExperienceVector) {
+      console.info('[recommendation] Volunteer has experience_vector but no valid profile_vector. Using default opportunity ordering.');
+    } else if (!hasProfileVector && !hasExperienceVector) {
+      console.info('[recommendation] Volunteer vectors unavailable. Using default opportunity ordering.');
+    }
+
+    query = query.orderBy('organization_posting.start_timestamp', 'asc');
+  }
+
+  const postings = await query.execute();
 
   const postingIds = postings.map(p => p.id);
 
@@ -103,18 +154,10 @@ volunteerPostingRouter.get('/', async (req, res: Response<VolunteerPostingSearch
     skillsByPostingId.get(skillRow.posting_id)!.push(skillRow);
   });
 
-  let postingWithSkills = postings.map(posting => ({
+  const postingWithSkills = postings.map(posting => ({
     ...posting,
     skills: skillsByPostingId.get(posting.id) || [],
   }));
-
-  if (skill) {
-    postingWithSkills = postingWithSkills.filter(posting =>
-      posting.skills.some(s =>
-        s.name.toLowerCase().includes((skill as string).toLowerCase()),
-      ),
-    );
-  }
 
   res.json({ postings: postingWithSkills });
 });
