@@ -1,4 +1,4 @@
-import { Cake, Mail, Mars, MessageSquare, MessageSquareMore, Venus } from 'lucide-react';
+import { Cake, Mail, Mars, MessageSquare, Venus } from 'lucide-react';
 import { useMemo, type ReactNode } from 'react';
 
 import SkillsList from './skills/SkillsList';
