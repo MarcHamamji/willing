@@ -7,10 +7,10 @@ import PostingCard from '../../components/PostingCard';
 import requestServer from '../../utils/requestServer';
 
 import type { VolunteerPostingSearchResponse } from '../../../../server/src/api/types';
-import type { PostingWithSkillsAndOrg } from '../../../../server/src/types';
+import type { PostingWithSkillsAndOrgName } from '../../../../server/src/types';
 
 function VolunteerHome() {
-  const [postings, setPostings] = useState<PostingWithSkillsAndOrg[]>([]);
+  const [postings, setPostings] = useState<PostingWithSkillsAndOrgName[]>([]);
   const [filters, setFilters] = useState<{
     location: string;
     skill: string;

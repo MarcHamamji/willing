@@ -3,7 +3,7 @@ import { createRoot } from 'react-dom/client';
 import { BrowserRouter, Route, Routes } from 'react-router';
 
 import { AuthProvider } from './auth/AuthContext';
-import { LoggedOutOnly, VolunteerOnly } from './auth/guards';
+import { LoggedOutOnly } from './auth/guards';
 import SharedPage from './components/layout/navbars/NavbarPage';
 import AdminHome from './pages/admin/AdminHome';
 import AdminLogin from './pages/admin/AdminLogin';

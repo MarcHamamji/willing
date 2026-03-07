@@ -32,10 +32,7 @@ import requestServer from '../utils/requestServer';
 import { useOrganization } from '../utils/useUsers';
 
 import type { OrganizationPostingApplicationsReponse, OrganizationPostingEnrollmentsResponse, OrganizationPostingResponse, OrganizationProfileResponse, VolunteerPostingResponse } from '../../../server/src/api/types';
-import type { OrganizationPosting, PostingSkill } from '../../../server/src/db/tables';
-import type { PostingApplication, PostingEnrollment } from '../../../server/src/types';
-
-type PostingWithSkills = OrganizationPosting & { skills: PostingSkill[] };
+import type { PostingApplication, PostingEnrollment, PostingWithSkills } from '../../../server/src/types';
 
 const getDateTimeInputValue = (value: Date | string) => {
   const parsed = new Date(value);
