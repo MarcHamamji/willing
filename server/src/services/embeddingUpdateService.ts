@@ -260,17 +260,20 @@ export const recomputeVolunteerExperienceVector = async (volunteerId: number, ex
     .where('enrollment.volunteer_id', '=', volunteerId)
     .where('enrollment.attended', '=', true)
     .orderBy('enrollment.created_at', 'desc')
+    .orderBy('enrollment.id', 'desc')
     .limit(EXPERIENCE_VECTOR_MAX_ENROLLMENTS)
     .execute();
 
   const vectors: number[][] = [];
   const weights: number[] = [];
+  let validRank = 0;
 
-  rows.forEach((row, index) => {
+  rows.forEach((row) => {
     const parsed = parseVectorLiteral(row.posting_context_vector);
     if (!parsed) return;
     vectors.push(parsed);
-    weights.push(getRecencyRankWeight(index));
+    weights.push(getRecencyRankWeight(validRank));
+    validRank += 1;
   });
 
   if (vectors.length === 0) {
