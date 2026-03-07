@@ -187,7 +187,7 @@ function ControlledCalendarInfo({
           </button>
 
           {activePicker === 'start' && (
-            <div className="absolute left-0 z-30 mt-2 rounded-box border border-base-300 bg-base-100 p-3 shadow-xl">
+            <div className="absolute left-0 z-500 mt-2 rounded-box border border-base-300 bg-base-100 p-3 shadow-xl">
               <DayPicker
                 className="willing-day-picker"
                 mode="single"
@@ -250,7 +250,7 @@ function ControlledCalendarInfo({
           </button>
 
           {activePicker === 'end' && (
-            <div className="absolute left-0 z-30 mt-2 rounded-box border border-base-300 bg-base-100 p-3 shadow-xl">
+            <div className="absolute left-0 z-500 mt-2 rounded-box border border-base-300 bg-base-100 p-3 shadow-xl">
               <DayPicker
                 className="willing-day-picker"
                 mode="single"
