@@ -1,10 +1,10 @@
-import { Building2, Heart, LayoutDashboard, LogIn, Zap, Users } from 'lucide-react';
+import { Building2, Heart, Zap, Users } from 'lucide-react';
 import { useContext, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 
 import AuthContext from '../auth/AuthContext';
 import Footer from '../components/layout/Footer';
-import Navbar from '../components/layout/navbars/EmptyNavbar';
+import UserNavbar from '../components/layout/navbars/UserNavbar';
 import requestServer from '../utils/requestServer';
 
 import type { PublicHomeStatsResponse } from '../../../server/src/api/types';
@@ -47,22 +47,7 @@ function HomePage() {
 
   return (
     <div className="min-h-screen flex flex-col bg-base-100">
-      <Navbar right={
-        !auth.user?.role
-          ? (
-              <Link to="/login" className="btn btn-ghost">
-                <LogIn size={20} />
-                Login
-              </Link>
-            )
-          : (
-              <Link to={'/' + auth.user.role} className="btn btn-ghost">
-                <LayoutDashboard size={20} />
-                Dashboard
-              </Link>
-            )
-      }
-      />
+      <UserNavbar />
 
       <main className="grow flex flex-col items-center justify-center max-w-5xl mx-auto py-12 px-4 mt-16">
         <div className="text-center mb-26">

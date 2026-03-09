@@ -1,13 +1,13 @@
 import { Outlet } from 'react-router';
 
-import { AdminOnly } from '../../auth/guards';
-import AdminNavbar from '../../components/layout/navbars/AdminNavbar';
+import UserNavbar from '../../components/layout/navbars/UserNavbar';
+import { AdminOnly } from '../guards';
 
 function AdminPage() {
   return (
-    <AdminOnly>
+    <AdminOnly redirectUrl="/admin/login">
       <main className="h-screen flex flex-col">
-        <AdminNavbar />
+        <UserNavbar />
         <Outlet />
       </main>
     </AdminOnly>

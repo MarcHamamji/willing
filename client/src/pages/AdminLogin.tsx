@@ -3,10 +3,10 @@ import { ShieldCheck, Mail, LockKeyhole, LogIn } from 'lucide-react';
 import { useContext } from 'react';
 import { useForm } from 'react-hook-form';
 
-import AuthContext from '../../auth/AuthContext';
-import Loading from '../../components/Loading';
-import { loginFormSchema, type LoginFormData } from '../../schemas/auth';
-import { executeAndShowError, FormField, FormRootError } from '../../utils/formUtils';
+import AuthContext from '../auth/AuthContext';
+import Loading from '../components/Loading';
+import { loginFormSchema, type LoginFormData } from '../schemas/auth';
+import { executeAndShowError, FormField, FormRootError } from '../utils/formUtils';
 
 function AdminLogin() {
   const auth = useContext(AuthContext);

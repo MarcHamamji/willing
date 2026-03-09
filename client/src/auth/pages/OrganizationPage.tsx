@@ -1,13 +1,13 @@
 import { Outlet } from 'react-router';
 
-import { OrganizationOnly } from '../../auth/guards';
-import OrganizationNavbar from '../../components/layout/navbars/OrganizationNavbar';
+import UserNavbar from '../../components/layout/navbars/UserNavbar';
+import { OrganizationOnly } from '../guards';
 
 function OrganizationPage() {
   return (
     <OrganizationOnly>
       <main className="h-screen flex flex-col">
-        <OrganizationNavbar />
+        <UserNavbar />
         <Outlet />
       </main>
     </OrganizationOnly>

@@ -15,24 +15,24 @@ import { useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { useForm, useWatch } from 'react-hook-form';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 
-import AuthContext from '../auth/AuthContext';
+import AuthContext from '../auth/AuthContext.tsx';
 import CalendarInfo from '../components/CalendarInfo.tsx';
-import ColumnLayout from '../components/layout/ColumnLayout';
-import PageHeader from '../components/layout/PageHeader';
-import Loading from '../components/Loading';
-import LocationPicker from '../components/LocationPicker';
-import PostingApplicationMessageModal from '../components/PostingApplicationMessageModal';
-import SkillsInput from '../components/skills/SkillsInput';
-import SkillsList from '../components/skills/SkillsList';
-import { ToggleButton } from '../components/ToggleButton';
-import VolunteerInfoCollapse from '../components/VolunteerInfoCollapse';
-import { organizationPostingFormSchema, type OrganizationPostingFormData } from '../schemas/auth';
-import { executeAndShowError, FormField } from '../utils/formUtils';
-import requestServer from '../utils/requestServer';
-import { useOrganization } from '../utils/useUsers';
+import ColumnLayout from '../components/layout/ColumnLayout.tsx';
+import PageHeader from '../components/layout/PageHeader.tsx';
+import Loading from '../components/Loading.tsx';
+import LocationPicker from '../components/LocationPicker.tsx';
+import PostingApplicationMessageModal from '../components/PostingApplicationMessageModal.tsx';
+import SkillsInput from '../components/skills/SkillsInput.tsx';
+import SkillsList from '../components/skills/SkillsList.tsx';
+import { ToggleButton } from '../components/ToggleButton.tsx';
+import VolunteerInfoCollapse from '../components/VolunteerInfoCollapse.tsx';
+import { organizationPostingFormSchema, type OrganizationPostingFormData } from '../schemas/auth.ts';
+import { executeAndShowError, FormField } from '../utils/formUtils.tsx';
+import requestServer from '../utils/requestServer.ts';
+import { useOrganization } from '../utils/useUsers.ts';
 
-import type { OrganizationPostingApplicationsReponse, OrganizationPostingEnrollmentsResponse, OrganizationPostingResponse, OrganizationProfileResponse, VolunteerPostingResponse } from '../../../server/src/api/types';
-import type { PostingApplication, PostingEnrollment, PostingWithSkills } from '../../../server/src/types';
+import type { OrganizationPostingApplicationsReponse, OrganizationPostingEnrollmentsResponse, OrganizationPostingResponse, OrganizationProfileResponse, VolunteerPostingResponse } from '../../../server/src/api/types.ts';
+import type { PostingApplication, PostingEnrollment, PostingWithSkills } from '../../../server/src/types.ts';
 
 const getDateTimeInputValue = (value: Date | string) => {
   const parsed = new Date(value);

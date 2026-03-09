@@ -2,7 +2,7 @@ import { ChevronDown, Home, LogOut, Settings, ShieldUser } from 'lucide-react';
 import { useCallback, useContext } from 'react';
 import { NavLink } from 'react-router';
 
-import Navbar from './EmptyNavbar';
+import Navbar from './Navbar';
 import AuthContext from '../../../auth/AuthContext';
 import { useAdmin } from '../../../auth/useUsers';
 

@@ -3,28 +3,28 @@ import { createRoot } from 'react-dom/client';
 import { BrowserRouter, Route, Routes } from 'react-router';
 
 import { AuthProvider } from './auth/AuthContext';
-import { LoggedOutOnly } from './auth/guards';
-import SharedPage from './components/layout/navbars/SharedPage';
+import AdminPage from './auth/pages/AdminPage';
+import LoggedOutPage from './auth/pages/LoggedOutPage';
+import OrganizationPage from './auth/pages/OrganizationPage';
+import SharedPage from './auth/pages/SharedPage';
+import VolunteerPage from './auth/pages/VolunteerPage';
 import AdminHome from './pages/admin/AdminHome';
-import AdminLogin from './pages/admin/AdminLogin';
-import AdminPage from './pages/admin/AdminPage';
 import AdminSettings from './pages/admin/AdminSettings';
-import ForgotPasswordPage from './pages/ForgotPasswordPage';
+import AdminLogin from './pages/AdminLogin';
+import ForgotPassword from './pages/ForgotPassword';
 import HomePage from './pages/HomePage';
 import NotFoundPage from './pages/NotFoundPage';
 import OrganizationHome from './pages/organization/OrganizationHome';
-import OrganizationPage from './pages/organization/OrganizationPage';
 import OrganizationPostingCreate from './pages/organization/OrganizationPostingCreate';
-import OrganizationRequest from './pages/organization/OrganizationRequest';
 import OrganizationSettings from './pages/organization/VolunteerSettings';
-import OrganizationProfilePage from './pages/OrganizationProfilePage';
-import PostingPage from './pages/PostingPage';
-import UserLoginPage from './pages/UserLoginPage';
-import VolunteerCreate from './pages/volunteer/VolunteerCreate';
+import OrganizationProfile from './pages/OrganizationProfile';
+import OrganizationRequest from './pages/OrganizationRequest';
+import Posting from './pages/Posting';
+import UserLogin from './pages/UserLogin';
 import VolunteerHome from './pages/volunteer/VolunteerHome';
-import VolunteerPage from './pages/volunteer/VolunteerPage';
 import VolunteerProfile from './pages/volunteer/VolunteerProfile';
 import VolunteerSettings from './pages/volunteer/VolunteerSettings';
+import VolunteerCreate from './pages/VolunteerCreate';
 
 import 'leaflet/dist/leaflet.css';
 import './index.css';
@@ -36,59 +36,25 @@ createRoot(document.getElementById('root')!).render(
         <Routes>
           <Route index element={<HomePage />} />
 
-          <Route
-            path="login"
-            element={(
-              <LoggedOutOnly>
-                <UserLoginPage />
-              </LoggedOutOnly>
-            )}
-          />
+          <Route element={<LoggedOutPage />}>
+            <Route path="login" element={<UserLogin />} />
+            <Route path="admin/login" element={<AdminLogin />} />
+            <Route path="volunteer/create" element={<VolunteerCreate />} />
+            <Route path="organization/request" element={<OrganizationRequest />} />
+            <Route path="forgot-password" element={<ForgotPassword />} />
+          </Route>
 
-          <Route
-            path="forgot-password"
-            element={(
-              <LoggedOutOnly>
-                <ForgotPasswordPage />
-              </LoggedOutOnly>
-            )}
-          />
-
-          <Route
-            path="admin/login"
-            element={(
-              <LoggedOutOnly>
-                <AdminLogin />
-              </LoggedOutOnly>
-            )}
-          />
           <Route path="admin" element={<AdminPage />}>
             <Route index element={<AdminHome />} />
             <Route path="settings" element={<AdminSettings />} />
           </Route>
 
-          <Route
-            path="organization/request"
-            element={(
-              <LoggedOutOnly>
-                <OrganizationRequest />
-              </LoggedOutOnly>
-            )}
-          />
           <Route path="organization" element={<OrganizationPage />}>
             <Route index element={<OrganizationHome />} />
             <Route path="posting" element={<OrganizationPostingCreate />} />
             <Route path="settings" element={<OrganizationSettings />} />
           </Route>
 
-          <Route
-            path="volunteer/create"
-            element={(
-              <LoggedOutOnly>
-                <VolunteerCreate />
-              </LoggedOutOnly>
-            )}
-          />
           <Route path="volunteer" element={<VolunteerPage />}>
             <Route index element={<VolunteerHome />} />
             <Route path="profile" element={<VolunteerProfile />} />
@@ -96,17 +62,8 @@ createRoot(document.getElementById('root')!).render(
           </Route>
 
           <Route path="/" element={<SharedPage roles={['volunteer', 'organization']} />}>
-            <Route
-              path="posting/:id"
-              element={<PostingPage />}
-            />
-          </Route>
-
-          <Route path="organization/:id" element={<VolunteerPage />}>
-            <Route
-              index
-              element={<OrganizationProfilePage />}
-            />
+            <Route path="posting/:id" element={<Posting />} />
+            <Route path="organization/:id" element={<OrganizationProfile />} />
           </Route>
 
           <Route path="*" element={<NotFoundPage />} />

@@ -4,11 +4,11 @@ import { useCallback, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useNavigate } from 'react-router';
 
-import Loading from '../../components/Loading';
-import LocationPicker from '../../components/LocationPicker';
-import { organizationRequestFormSchema, type OrganizationRequestFormData } from '../../schemas/auth';
-import { executeAndShowError, FormField, FormRootError } from '../../utils/formUtils';
-import requestServer from '../../utils/requestServer';
+import Loading from '../components/Loading';
+import LocationPicker from '../components/LocationPicker';
+import { organizationRequestFormSchema, type OrganizationRequestFormData } from '../schemas/auth';
+import { executeAndShowError, FormField, FormRootError } from '../utils/formUtils';
+import requestServer from '../utils/requestServer';
 
 export default function OrganizationRequestPage() {
   const navigate = useNavigate();

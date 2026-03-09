@@ -1,13 +1,13 @@
 import { Outlet } from 'react-router';
 
-import { VolunteerOnly } from '../../auth/guards';
-import VolunteerNavbar from '../../components/layout/navbars/VolunteerNavbar';
+import UserNavbar from '../../components/layout/navbars/UserNavbar';
+import { VolunteerOnly } from '../guards';
 
 function VolunteerPage() {
   return (
     <VolunteerOnly>
       <main className="h-screen flex flex-col">
-        <VolunteerNavbar />
+        <UserNavbar />
         <Outlet />
       </main>
     </VolunteerOnly>

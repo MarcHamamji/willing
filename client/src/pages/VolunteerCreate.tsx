@@ -12,10 +12,10 @@ import { useContext } from 'react';
 import { useForm } from 'react-hook-form';
 import { Link } from 'react-router-dom';
 
-import AuthContext from '../../auth/AuthContext';
-import Loading from '../../components/Loading';
-import { volunteerSignupSchema, type VolunteerSignupFormData } from '../../schemas/auth';
-import { executeAndShowError, FormField, FormRootError } from '../../utils/formUtils';
+import AuthContext from '../auth/AuthContext';
+import Loading from '../components/Loading';
+import { volunteerSignupSchema, type VolunteerSignupFormData } from '../schemas/auth';
+import { executeAndShowError, FormField, FormRootError } from '../utils/formUtils';
 
 export default function VolunteerCreate() {
   const auth = useContext(AuthContext);

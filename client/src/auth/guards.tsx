@@ -6,6 +6,13 @@ import Loading from '../components/Loading';
 
 import type { Role } from '../../../server/src/types';
 
+const getRoleHomePage = (role?: Role) => ({
+  none: '/',
+  admin: '/admin',
+  organization: '/organization',
+  volunteer: '/volunteer',
+}[role || 'none']);
+
 const AuthLoading = () => (
   <div className="flex items-center justify-center mt-6">
     <Loading size="xl" />
@@ -21,16 +28,8 @@ export function LoggedOutOnly({ children }: { children?: ReactNode }) {
       : auth.user
         ? <Navigate to={'/' + auth.user.role} replace={true} />
         : children
-
   );
 }
-
-const getRoleHomePage = (role?: Role) => ({
-  none: '/',
-  admin: '/admin',
-  organization: '/organization',
-  volunteer: '/volunteer',
-}[role || 'none']);
 
 export function AdminOnly({ children, redirectUrl }: { children?: ReactNode; redirectUrl?: string }) {
   return (

@@ -2,12 +2,12 @@ import { Home } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 import Footer from '../components/layout/Footer';
-import Navbar from '../components/layout/navbars/EmptyNavbar';
+import UserNavbar from '../components/layout/navbars/UserNavbar';
 
 function NotFoundPage() {
   return (
     <div className="min-h-screen flex flex-col bg-base-100">
-      <Navbar />
+      <UserNavbar />
 
       <main className="grow flex flex-col items-center justify-center max-w-5xl mx-auto py-12 px-4 text-center">
         <div className="space-y-6">
