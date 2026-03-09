@@ -4,7 +4,7 @@ import { BrowserRouter, Route, Routes } from 'react-router';
 
 import { AuthProvider } from './auth/AuthContext';
 import { LoggedOutOnly } from './auth/guards';
-import SharedPage from './components/layout/navbars/NavbarPage';
+import SharedPage from './components/layout/navbars/SharedPage';
 import AdminHome from './pages/admin/AdminHome';
 import AdminLogin from './pages/admin/AdminLogin';
 import AdminPage from './pages/admin/AdminPage';
@@ -95,7 +95,7 @@ createRoot(document.getElementById('root')!).render(
             <Route path="settings" element={<VolunteerSettings />} />
           </Route>
 
-          <Route path="/" element={<SharedPage />}>
+          <Route path="/" element={<SharedPage roles={['volunteer', 'organization']} />}>
             <Route
               path="posting/:id"
               element={<PostingPage />}

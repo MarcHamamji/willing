@@ -33,37 +33,47 @@ const getRoleHomePage = (role?: Role) => ({
 }[role || 'none']);
 
 export function AdminOnly({ children, redirectUrl }: { children?: ReactNode; redirectUrl?: string }) {
-  const auth = useContext(AuthContext);
-
   return (
-    !auth.loaded
-      ? <AuthLoading />
-      : auth.user?.role !== 'admin'
-        ? <Navigate to={redirectUrl || getRoleHomePage(auth.user?.role)} replace={true} />
-        : children
+    <RolesOnly roles={['admin']} redirectUrl={redirectUrl}>
+      {children}
+    </RolesOnly>
   );
 }
 
 export function OrganizationOnly({ children, redirectUrl }: { children?: ReactNode; redirectUrl?: string }) {
-  const auth = useContext(AuthContext);
-
   return (
-    !auth.loaded
-      ? <AuthLoading />
-      : auth.user?.role !== 'organization'
-        ? <Navigate to={redirectUrl || getRoleHomePage(auth.user?.role)} replace={true} />
-        : children
+    <RolesOnly roles={['organization']} redirectUrl={redirectUrl}>
+      {children}
+    </RolesOnly>
   );
 }
 
 export function VolunteerOnly({ children, redirectUrl }: { children?: ReactNode; redirectUrl?: string }) {
+  return (
+    <RolesOnly roles={['volunteer']} redirectUrl={redirectUrl}>
+      {children}
+    </RolesOnly>
+  );
+}
+
+export function RolesOnly({
+  children,
+  roles,
+  redirectUrl,
+}: {
+  children?: ReactNode;
+  roles: Role[];
+  redirectUrl?: string;
+}) {
   const auth = useContext(AuthContext);
 
-  return (
-    !auth.loaded
-      ? <AuthLoading />
-      : auth.user?.role !== 'volunteer'
-        ? <Navigate to={redirectUrl || getRoleHomePage(auth.user?.role)} replace={true} />
-        : children
-  );
+  if (!auth.loaded) {
+    return <AuthLoading />;
+  }
+
+  if (!auth.user?.role || !roles.includes(auth.user.role)) {
+    return <Navigate to={redirectUrl || getRoleHomePage(auth.user?.role)} replace={true} />;
+  }
+
+  return children;
 }
