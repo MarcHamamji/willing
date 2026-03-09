@@ -6,8 +6,10 @@ import {
   Mail,
   Mars,
   Venus,
+  FileText,
+  Trash2,
 } from 'lucide-react';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState, type ChangeEvent } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 
@@ -33,10 +35,12 @@ const profileFormSchema = volunteerAccountSchema.omit({
   experience_vector: true,
   created_at: true,
   updated_at: true,
-})
-  .extend({
-    description: z.string().max(DESCRIPTION_MAX_LENGTH, `Description must be at most ${DESCRIPTION_MAX_LENGTH} characters`),
-  });
+}).extend({
+  description: z.string().max(
+    DESCRIPTION_MAX_LENGTH,
+    `Description must be at most ${DESCRIPTION_MAX_LENGTH} characters`,
+  ),
+});
 
 type ProfileFormData = z.infer<typeof profileFormSchema>;
 
@@ -56,6 +60,8 @@ function VolunteerProfile() {
   const [saveMessage, setSaveMessage] = useState<string | null>(null);
   const [isSaveMessageVisible, setIsSaveMessageVisible] = useState(false);
   const [isEditMode, setIsEditMode] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const [cvBusy, setCvBusy] = useState(false);
 
   const form = useForm<ProfileFormData>({
     resolver: zodResolver(profileFormSchema),
@@ -74,7 +80,10 @@ function VolunteerProfile() {
     try {
       setLoading(true);
       setFetchError(null);
-      const response = await requestServer<VolunteerProfileResponse>('/volunteer/profile', { includeJwt: true });
+      const response = await requestServer<VolunteerProfileResponse>(
+        '/volunteer/profile',
+        { includeJwt: true },
+      );
       setProfile(response);
       setSkills(response.skills);
       form.reset({
@@ -214,6 +223,70 @@ function VolunteerProfile() {
     setSaveMessage(null);
   }, [form, profile]);
 
+  const onUploadCv = async (event: ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    const isPdf = file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf');
+
+    if (!isPdf) {
+      setSaveError('Only PDF files are allowed.');
+      if (fileInputRef.current) fileInputRef.current.value = '';
+      return;
+    }
+
+    try {
+      setCvBusy(true);
+      setSaveError(null);
+      setSaveMessage(null);
+
+      const formData = new FormData();
+      formData.append('cv', file);
+
+      const response = await requestServer<VolunteerProfileResponse>(
+        '/volunteer/profile/cv',
+        {
+          method: 'POST',
+          body: formData,
+          includeJwt: true,
+        },
+      );
+
+      setProfile(response);
+      setSaveMessage('CV uploaded successfully.');
+    } catch (error) {
+      setSaveError(error instanceof Error ? error.message : 'Failed to upload CV');
+    } finally {
+      setCvBusy(false);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
+    }
+  };
+
+  const onDeleteCv = async () => {
+    try {
+      setCvBusy(true);
+      setSaveError(null);
+      setSaveMessage(null);
+
+      const response = await requestServer<VolunteerProfileResponse>(
+        '/volunteer/profile/cv',
+        {
+          method: 'DELETE',
+          includeJwt: true,
+        },
+      );
+
+      setProfile(response);
+      setSaveMessage('CV removed successfully.');
+    } catch (error) {
+      setSaveError(error instanceof Error ? error.message : 'Failed to remove CV');
+    } finally {
+      setCvBusy(false);
+    }
+  };
+
   if (loading) {
     return (
       <div className="grow bg-base-200">
@@ -233,7 +306,9 @@ function VolunteerProfile() {
           <div role="alert" className="alert alert-error">
             <span>{fetchError}</span>
           </div>
-          <button className="btn btn-outline mt-4" onClick={loadProfile}>Retry</button>
+          <button className="btn btn-outline mt-4" onClick={loadProfile}>
+            Retry
+          </button>
         </div>
       </div>
     );
@@ -261,22 +336,22 @@ function VolunteerProfile() {
           subtitle="Manage your details, availability, and focus areas."
           actions={(
             <>
-              {
-                isEditMode
-                  ? (
-                      <button className="btn btn-outline" onClick={onCancelEdit} disabled={saving}>
-                        Cancel
-                      </button>
-                    )
-                  : (
-                      <button className="btn btn-outline" onClick={() => setIsEditMode(true)}>
-                        Edit Profile
-                      </button>
-                    )
-              }
+              {isEditMode
+                ? (
+                    <button className="btn btn-outline" onClick={onCancelEdit} disabled={saving}>
+                      Cancel
+                    </button>
+                  )
+                : (
+                    <button className="btn btn-outline" onClick={() => setIsEditMode(true)}>
+                      Edit Profile
+                    </button>
+                  )}
               {isEditMode && (
                 <button className="btn btn-primary" onClick={onSave} disabled={saving}>
-                  {saving ? 'Saving...' : 'Save Changes'}
+                  {saving
+                    ? 'Saving...'
+                    : 'Save Changes'}
                 </button>
               )}
             </>
@@ -367,7 +442,13 @@ function VolunteerProfile() {
                             </div>
                           </div>
                           <div className={saving ? 'pointer-events-none opacity-70' : ''}>
-                            <FormField form={form} name="date_of_birth" label="Date of Birth" type="date" Icon={Calendar} />
+                            <FormField
+                              form={form}
+                              name="date_of_birth"
+                              label="Date of Birth"
+                              type="date"
+                              Icon={Calendar}
+                            />
                           </div>
                         </div>
                       )
@@ -378,7 +459,9 @@ function VolunteerProfile() {
                               <Mail size={14} />
                               Email
                             </span>
-                            <span className="font-medium text-right break-all">{profile.volunteer.email}</span>
+                            <span className="font-medium text-right break-all">
+                              {profile.volunteer.email}
+                            </span>
                           </div>
                           <div className="flex items-center justify-between gap-2">
                             <span className="opacity-70 flex items-center gap-2">
@@ -403,7 +486,11 @@ function VolunteerProfile() {
                               rows={4}
                               maxLength={DESCRIPTION_MAX_LENGTH}
                             />
-                            <p className={`block min-h-5 text-xs mt-1 ${form.formState.errors.description ? 'text-error' : 'invisible'}`}>
+                            <p
+                              className={`block min-h-5 text-xs mt-1 ${
+                                form.formState.errors.description ? 'text-error' : 'invisible'
+                              }`}
+                            >
                               {form.formState.errors.description?.message || 'placeholder'}
                             </p>
                             <p className="text-xs opacity-60 mt-1 text-right">
@@ -428,16 +515,13 @@ function VolunteerProfile() {
                 <h5 className="font-bold text-lg">Skills</h5>
                 <p className="text-sm opacity-70 mt-1">Add skills to highlight your expertise.</p>
 
-                {
-                  isEditMode
-                    ? (
-                        <SkillsInput skills={skills} setSkills={setSkills} />
-                      )
-                    : (
-                        <SkillsList skills={skills} enableLimit={false} />
-                      )
-                }
-
+                {isEditMode
+                  ? (
+                      <SkillsInput skills={skills} setSkills={setSkills} />
+                    )
+                  : (
+                      <SkillsList skills={skills} enableLimit={false} />
+                    )}
               </div>
             </div>
 
@@ -455,6 +539,75 @@ function VolunteerProfile() {
 
             <div className="card bg-base-100 shadow-md">
               <div className="card-body">
+                <h5 className="font-bold text-lg">CV</h5>
+                <p className="text-sm opacity-70 mt-1">
+                  Upload your CV as a PDF with exactly 3 pages.
+                </p>
+
+                <div className="mt-4 flex flex-col gap-3">
+                  {profile.volunteer.cv_path
+                    ? (
+                        <div className="flex flex-wrap items-center gap-3">
+                          <a
+                            href={`http://localhost:9090${profile.volunteer.cv_path}`}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="btn btn-outline"
+                          >
+                            <FileText size={16} />
+                            View Current CV
+                          </a>
+
+                          <button
+                            type="button"
+                            className="btn btn-error btn-outline"
+                            onClick={onDeleteCv}
+                            disabled={cvBusy}
+                          >
+                            <Trash2 size={16} />
+                            {cvBusy
+                              ? 'Removing...'
+                              : 'Remove CV'}
+                          </button>
+                        </div>
+                      )
+                    : (
+                        <div className="alert alert-soft">
+                          <span className="text-sm">No CV uploaded yet.</span>
+                        </div>
+                      )}
+
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept="application/pdf,.pdf"
+                    className="hidden"
+                    onChange={onUploadCv}
+                    disabled={cvBusy}
+                  />
+
+                  <div className="flex flex-wrap items-center gap-3">
+                    <button
+                      type="button"
+                      className="btn btn-outline"
+                      onClick={() => fileInputRef.current?.click()}
+                      disabled={cvBusy}
+                    >
+                      {cvBusy
+                        ? 'Uploading...'
+                        : 'Upload CV'}
+                    </button>
+
+                    <span className="text-xs opacity-60">
+                      PDF only, exactly 3 pages, up to 5MB.
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="card bg-base-100 shadow-md">
+              <div className="card-body">
                 <h5 className="font-bold text-lg">Privacy Setting</h5>
                 <p className="text-sm opacity-70 mb-4">Profile visibility preference.</p>
                 {isEditMode
@@ -465,15 +618,35 @@ function VolunteerProfile() {
                         label="Visibility"
                         disabled={saving}
                         options={[
-                          { value: 'public', label: 'Public', description: 'Your profile is public', Icon: Globe, btnColor: 'btn-primary' },
-                          { value: 'private', label: 'Private', description: 'Your profile is private', Icon: Lock, btnColor: 'btn-secondary' },
+                          {
+                            value: 'public',
+                            label: 'Public',
+                            description: 'Your profile is public',
+                            Icon: Globe,
+                            btnColor: 'btn-primary',
+                          },
+                          {
+                            value: 'private',
+                            label: 'Private',
+                            description: 'Your profile is private',
+                            Icon: Lock,
+                            btnColor: 'btn-secondary',
+                          },
                         ]}
                       />
                     )
                   : (
-                      <span className={`badge gap-2 ${formValues.privacy === 'private' ? 'badge-secondary' : 'badge-primary'}`}>
-                        {formValues.privacy === 'private' ? <Lock size={12} /> : <Globe size={12} />}
-                        {formValues.privacy === 'private' ? 'Private' : 'Public'}
+                      <span
+                        className={`badge gap-2 ${
+                          formValues.privacy === 'private' ? 'badge-secondary' : 'badge-primary'
+                        }`}
+                      >
+                        {formValues.privacy === 'private'
+                          ? <Lock size={12} />
+                          : <Globe size={12} />}
+                        {formValues.privacy === 'private'
+                          ? 'Private'
+                          : 'Public'}
                       </span>
                     )}
               </div>
@@ -484,5 +657,4 @@ function VolunteerProfile() {
     </div>
   );
 }
-
 export default VolunteerProfile;

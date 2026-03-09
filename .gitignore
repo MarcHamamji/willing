@@ -153,4 +153,5 @@ postgres-data/
 Thumbs.db
 
 #UPLOADS
+# uploads
 uploads/

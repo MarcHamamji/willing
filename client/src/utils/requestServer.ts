@@ -16,7 +16,9 @@ export default async function requestServer<ReturnType>(path: string, { body, me
     headers.append('Authorization', 'Bearer ' + localStorage.getItem('jwt'));
   }
 
-  if (body) {
+  if (body instanceof FormData) {
+    options.body = body;
+  } else if (body !== undefined) {
     headers.append('Content-Type', 'application/json');
     options.body = JSON.stringify(body);
   }

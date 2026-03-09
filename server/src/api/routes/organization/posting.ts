@@ -443,6 +443,7 @@ postingRouter.get('/:id/applications', async (req, res: Response<OrganizationPos
       'volunteer_account.email',
       'volunteer_account.date_of_birth',
       'volunteer_account.gender',
+      'volunteer_account.cv_file',
     ])
     .where('enrollment_application.posting_id', '=', postingId)
     .execute();
