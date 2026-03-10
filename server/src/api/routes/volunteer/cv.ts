@@ -11,17 +11,17 @@ import database from '../../../db/index.js';
 const volunteerCvRouter = Router();
 
 // ONLY source of truth for where files are stored:
-const CV_DIR = config.CV_UPLOAD_DIR;
 
 // Ensure folder exists
-fs.mkdirSync(CV_DIR, { recursive: true });
+fs.mkdirSync(config.CV_UPLOAD_DIR, { recursive: true });
 
 // Always store as random.pdf
 const storage = multer.diskStorage({
-  destination: (_req, _file, cb) => cb(null, CV_DIR),
+  destination: (_req, _file, cb) => cb(null, config.CV_UPLOAD_DIR),
   filename: (_req, _file, cb) => cb(null, `${crypto.randomBytes(16).toString('hex')}.pdf`),
 });
 
+fs.mkdirSync(config.CV_UPLOAD_DIR, { recursive: true });
 // PDF-only filter
 const fileFilter: multer.Options['fileFilter'] = (_req, file, cb) => {
   const isPdfMime = file.mimetype === 'application/pdf';
@@ -95,7 +95,7 @@ volunteerCvRouter.post(
 
     if (existing?.cv_path) {
       try {
-        await fs.promises.unlink(`${CV_DIR}/${existing.cv_path}`);
+        await fs.promises.unlink(`${config.CV_UPLOAD_DIR}/${existing.cv_path}`);
       } catch {
         // ignore
       }
@@ -124,7 +124,7 @@ volunteerCvRouter.get('/preview', async (req, res) => {
   res.setHeader('Content-Type', 'application/pdf');
   res.setHeader('Content-Disposition', 'inline; filename="cv.pdf"');
 
-  res.sendFile(row.cv_path, { root: CV_DIR });
+  res.sendFile(row.cv_path, { root: config.CV_UPLOAD_DIR });
 });
 
 // GET /api/volunteer/cv/download
@@ -140,7 +140,7 @@ volunteerCvRouter.get('/download', async (req, res) => {
   res.setHeader('Content-Type', 'application/pdf');
   res.setHeader('Content-Disposition', 'attachment; filename="cv.pdf"');
 
-  res.sendFile(row.cv_path, { root: CV_DIR });
+  res.sendFile(row.cv_path, { root: config.CV_UPLOAD_DIR });
 });
 
 // DELETE /api/volunteer/cv
@@ -153,7 +153,7 @@ volunteerCvRouter.delete('/', async (req, res) => {
 
   if (row?.cv_path) {
     try {
-      await fs.promises.unlink(`${CV_DIR}/${row.cv_path}`);
+      await fs.promises.unlink(`${config.CV_UPLOAD_DIR}/${row.cv_path}`);
     } catch {
       // ignore
     }
