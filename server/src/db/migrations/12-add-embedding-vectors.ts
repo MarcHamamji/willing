@@ -1,94 +1,114 @@
 import { Kysely, sql } from 'kysely';
 
 const VECTOR_DIM = 1536;
+const VECTOR_DIM_TYPE = sql`vector(${sql.raw(String(VECTOR_DIM))})`;
 
 export async function up(db: Kysely<unknown>): Promise<void> {
-  await sql`CREATE EXTENSION IF NOT EXISTS vector;`.execute(db);
+  await db.schema
+    .alterTable('organization_account')
+    .addColumn('org_vector', VECTOR_DIM_TYPE)
+    .execute();
 
-  await sql`
-    ALTER TABLE organization_account
-    ADD COLUMN IF NOT EXISTS org_vector vector(${sql.raw(String(VECTOR_DIM))});
-  `.execute(db);
+  await db.schema
+    .alterTable('organization_posting')
+    .addColumn('opportunity_vector', VECTOR_DIM_TYPE)
+    .execute();
 
-  await sql`
-    ALTER TABLE organization_posting
-    ADD COLUMN IF NOT EXISTS opportunity_vector vector(${sql.raw(String(VECTOR_DIM))}),
-    ADD COLUMN IF NOT EXISTS posting_context_vector vector(${sql.raw(String(VECTOR_DIM))});
-  `.execute(db);
+  await db.schema
+    .alterTable('organization_posting')
+    .addColumn('posting_context_vector', VECTOR_DIM_TYPE)
+    .execute();
 
-  await sql`
-    ALTER TABLE volunteer_account
-    ADD COLUMN IF NOT EXISTS profile_vector vector(${sql.raw(String(VECTOR_DIM))}),
-    ADD COLUMN IF NOT EXISTS experience_vector vector(${sql.raw(String(VECTOR_DIM))});
-  `.execute(db);
+  await db.schema
+    .alterTable('volunteer_account')
+    .addColumn('profile_vector', VECTOR_DIM_TYPE)
+    .execute();
 
-  await sql`
-    ALTER TABLE enrollment
-    DROP COLUMN IF EXISTS experience_vector;
-  `.execute(db);
+  await db.schema
+    .alterTable('volunteer_account')
+    .addColumn('experience_vector', VECTOR_DIM_TYPE)
+    .execute();
 
-  await sql`
-    CREATE INDEX IF NOT EXISTS idx_organization_account_org_vector
-    ON organization_account
-    USING ivfflat (org_vector vector_cosine_ops)
-    WITH (lists = 100);
-  `.execute(db);
+  await db.schema
+    .alterTable('enrollment')
+    .dropColumn('experience_vector')
+    .execute();
 
-  await sql`
-    CREATE INDEX IF NOT EXISTS idx_organization_posting_opportunity_vector
-    ON organization_posting
-    USING ivfflat (opportunity_vector vector_cosine_ops)
-    WITH (lists = 100);
-  `.execute(db);
+  await db.schema
+    .createIndex('idx_organization_account_org_vector')
+    .ifNotExists()
+    .on('organization_account')
+    .using('ivfflat')
+    .column('org_vector')
+    .execute();
 
-  await sql`
-    CREATE INDEX IF NOT EXISTS idx_organization_posting_context_vector
-    ON organization_posting
-    USING ivfflat (posting_context_vector vector_cosine_ops)
-    WITH (lists = 100);
-  `.execute(db);
+  await db.schema
+    .createIndex('idx_organization_posting_opportunity_vector')
+    .ifNotExists()
+    .on('organization_posting')
+    .using('ivfflat')
+    .column('opportunity_vector')
+    .execute();
 
-  await sql`
-    CREATE INDEX IF NOT EXISTS idx_volunteer_account_profile_vector
-    ON volunteer_account
-    USING ivfflat (profile_vector vector_cosine_ops)
-    WITH (lists = 100);
-  `.execute(db);
+  await db.schema
+    .createIndex('idx_organization_posting_context_vector')
+    .ifNotExists()
+    .on('organization_posting')
+    .using('ivfflat')
+    .column('posting_context_vector')
+    .execute();
 
-  await sql`
-    CREATE INDEX IF NOT EXISTS idx_volunteer_account_experience_vector
-    ON volunteer_account
-    USING ivfflat (experience_vector vector_cosine_ops)
-    WITH (lists = 100);
-  `.execute(db);
+  await db.schema
+    .createIndex('idx_volunteer_account_profile_vector')
+    .ifNotExists()
+    .on('volunteer_account')
+    .using('ivfflat')
+    .column('profile_vector')
+    .execute();
+
+  await db.schema
+    .createIndex('idx_volunteer_account_experience_vector')
+    .ifNotExists()
+    .on('volunteer_account')
+    .using('ivfflat')
+    .column('experience_vector')
+    .execute();
 }
 
 export async function down(db: Kysely<unknown>): Promise<void> {
-  await sql`DROP INDEX IF EXISTS idx_volunteer_account_experience_vector;`.execute(db);
-  await sql`DROP INDEX IF EXISTS idx_volunteer_account_profile_vector;`.execute(db);
-  await sql`DROP INDEX IF EXISTS idx_organization_posting_context_vector;`.execute(db);
-  await sql`DROP INDEX IF EXISTS idx_organization_posting_opportunity_vector;`.execute(db);
-  await sql`DROP INDEX IF EXISTS idx_organization_account_org_vector;`.execute(db);
+  await db.schema.dropIndex('idx_volunteer_account_experience_vector').ifExists().execute();
+  await db.schema.dropIndex('idx_volunteer_account_profile_vector').ifExists().execute();
+  await db.schema.dropIndex('idx_organization_posting_context_vector').ifExists().execute();
+  await db.schema.dropIndex('idx_organization_posting_opportunity_vector').ifExists().execute();
+  await db.schema.dropIndex('idx_organization_account_org_vector').ifExists().execute();
 
-  await sql`
-    ALTER TABLE volunteer_account
-    DROP COLUMN IF EXISTS profile_vector,
-    DROP COLUMN IF EXISTS experience_vector;
-  `.execute(db);
+  await db.schema
+    .alterTable('volunteer_account')
+    .dropColumn('profile_vector')
+    .execute();
 
-  await sql`
-    ALTER TABLE organization_posting
-    DROP COLUMN IF EXISTS opportunity_vector,
-    DROP COLUMN IF EXISTS posting_context_vector;
-  `.execute(db);
+  await db.schema
+    .alterTable('volunteer_account')
+    .dropColumn('experience_vector')
+    .execute();
 
-  await sql`
-    ALTER TABLE organization_account
-    DROP COLUMN IF EXISTS org_vector;
-  `.execute(db);
+  await db.schema
+    .alterTable('organization_posting')
+    .dropColumn('opportunity_vector')
+    .execute();
 
-  await sql`
-    ALTER TABLE enrollment
-    ADD COLUMN IF NOT EXISTS experience_vector vector;
-  `.execute(db);
+  await db.schema
+    .alterTable('organization_posting')
+    .dropColumn('posting_context_vector')
+    .execute();
+
+  await db.schema
+    .alterTable('organization_account')
+    .dropColumn('org_vector')
+    .execute();
+
+  await db.schema
+    .alterTable('enrollment')
+    .addColumn('experience_vector', sql`vector`)
+    .execute();
 }

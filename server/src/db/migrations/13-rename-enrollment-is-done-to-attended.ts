@@ -1,31 +1,15 @@
-import { Kysely, sql } from 'kysely';
+import { Kysely } from 'kysely';
 
 export async function up(db: Kysely<unknown>): Promise<void> {
-  await sql`
-    DO $$
-    BEGIN
-      IF EXISTS (
-        SELECT 1
-        FROM information_schema.columns
-        WHERE table_name = 'enrollment' AND column_name = 'is_done'
-      ) THEN
-        ALTER TABLE enrollment RENAME COLUMN is_done TO attended;
-      END IF;
-    END $$;
-  `.execute(db);
+  await db.schema
+    .alterTable('enrollment')
+    .renameColumn('is_done', 'attended')
+    .execute();
 }
 
 export async function down(db: Kysely<unknown>): Promise<void> {
-  await sql`
-    DO $$
-    BEGIN
-      IF EXISTS (
-        SELECT 1
-        FROM information_schema.columns
-        WHERE table_name = 'enrollment' AND column_name = 'attended'
-      ) THEN
-        ALTER TABLE enrollment RENAME COLUMN attended TO is_done;
-      END IF;
-    END $$;
-  `.execute(db);
+  await db.schema
+    .alterTable('enrollment')
+    .renameColumn('attended', 'is_done')
+    .execute();
 }
