@@ -35,7 +35,7 @@
     "noUncheckedSideEffectImports": true,
     "moduleDetection": "force",
     "skipLibCheck": true,
-
+    
     "typeRoots": [
       "./node_modules/@types",
       "./types"

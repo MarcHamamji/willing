@@ -3,7 +3,7 @@ import { Kysely, Transaction, sql } from 'kysely';
 import { runOrDeferEmbeddingJob } from './embeddingRateLimiter.js';
 import database from '../../db/index.js';
 import { type Database, type OrganizationAccount, type OrganizationPosting, type VolunteerAccountWithoutPassword } from '../../db/tables.js';
-import { extractCvText } from '../cv/cvTextService.js';
+import { extractCvText } from '../cv/CVTextExtraction.js';
 import {
   combineVectors,
   embedText,
