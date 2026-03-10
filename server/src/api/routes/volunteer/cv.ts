@@ -3,6 +3,7 @@ import fs from 'fs';
 
 import { Router, Request, Response } from 'express';
 import multer from 'multer';
+import { PDFParse } from 'pdf-parse';
 
 import config from '../../../config.js';
 import database from '../../../db/index.js';
@@ -31,40 +32,78 @@ const fileFilter: multer.Options['fileFilter'] = (_req, file, cb) => {
 
 const uploadCv = multer({ storage, fileFilter });
 
+const validateCvPdf = async (filePath: string) => {
+  const fileBytes = await fs.promises.readFile(filePath);
+
+  let parser: PDFParse | undefined;
+
+  try {
+    parser = new PDFParse({ data: fileBytes });
+    const info = await parser.getInfo();
+
+    const pageCount = info.total ?? 0;
+
+    if (pageCount > 3) {
+      throw new Error('CV must be a PDF with no more than 3 pages.');
+    }
+  } catch (error) {
+    if (error instanceof Error && error.message === 'CV must be a PDF with no more than 3 pages.') {
+      throw error;
+    }
+
+    throw new Error('Uploaded file is not a valid PDF.');
+  } finally {
+    await parser?.destroy();
+  }
+};
+
 // POST /api/volunteer/cv (upload/replace)
 volunteerCvRouter.post(
   '/',
   (req, res, next) => {
-    uploadCv.single('cv')(req, res, (err: any) => {
-      if (err) return res.status(400).json({ error: err.message ?? 'Upload failed' });
+    uploadCv.single('cv')(req, res, (err: unknown) => {
+      if (err instanceof Error) {
+        return res.status(400).json({ error: err.message });
+      }
+
+      if (err) {
+        return res.status(400).json({ error: 'Upload failed' });
+      }
+
       next();
     });
   },
   async (req: Request, res: Response) => {
     if (!req.file) return res.status(400).json({ error: 'Missing file field "cv".' });
 
+    try {
+      await validateCvPdf(req.file.path);
+    } catch (error) {
+      await fs.promises.unlink(req.file.path).catch(() => {});
+      return res.status(400).json({
+        error: error instanceof Error ? error.message : 'Upload failed',
+      });
+    }
+
     const volunteerId = req.userJWT!.id;
 
-    // get old filename from DB (NOT a path)
     const existing = await database
       .selectFrom('volunteer_account')
-      .select(['cv_file'])
+      .select(['cv_path'])
       .where('id', '=', volunteerId)
       .executeTakeFirst();
 
-    // delete old file from disk if it existed
-    if (existing?.cv_file) {
+    if (existing?.cv_path) {
       try {
-        await fs.promises.unlink(`${CV_DIR}/${existing.cv_file}`);
+        await fs.promises.unlink(`${CV_DIR}/${existing.cv_path}`);
       } catch {
         // ignore
       }
     }
 
-    // store ONLY the filename in DB
     await database
       .updateTable('volunteer_account')
-      .set({ cv_file: req.file.filename })
+      .set({ cv_path: req.file.filename })
       .where('id', '=', volunteerId)
       .execute();
 
@@ -76,46 +115,45 @@ volunteerCvRouter.post(
 volunteerCvRouter.get('/preview', async (req, res) => {
   const row = await database
     .selectFrom('volunteer_account')
-    .select(['cv_file'])
+    .select(['cv_path'])
     .where('id', '=', req.userJWT!.id)
     .executeTakeFirst();
 
-  if (!row?.cv_file) return res.status(404).json({ error: 'No CV uploaded.' });
+  if (!row?.cv_path) return res.status(404).json({ error: 'No CV uploaded.' });
 
   res.setHeader('Content-Type', 'application/pdf');
   res.setHeader('Content-Disposition', 'inline; filename="cv.pdf"');
 
-  // sendFile uses filename + root folder, so DB never stores a path
-  res.sendFile(row.cv_file, { root: CV_DIR });
+  res.sendFile(row.cv_path, { root: CV_DIR });
 });
 
 // GET /api/volunteer/cv/download
 volunteerCvRouter.get('/download', async (req, res) => {
   const row = await database
     .selectFrom('volunteer_account')
-    .select(['cv_file'])
+    .select(['cv_path'])
     .where('id', '=', req.userJWT!.id)
     .executeTakeFirst();
 
-  if (!row?.cv_file) return res.status(404).json({ error: 'No CV uploaded.' });
+  if (!row?.cv_path) return res.status(404).json({ error: 'No CV uploaded.' });
 
   res.setHeader('Content-Type', 'application/pdf');
   res.setHeader('Content-Disposition', 'attachment; filename="cv.pdf"');
 
-  res.sendFile(row.cv_file, { root: CV_DIR });
+  res.sendFile(row.cv_path, { root: CV_DIR });
 });
 
 // DELETE /api/volunteer/cv
 volunteerCvRouter.delete('/', async (req, res) => {
   const row = await database
     .selectFrom('volunteer_account')
-    .select(['cv_file'])
+    .select(['cv_path'])
     .where('id', '=', req.userJWT!.id)
     .executeTakeFirst();
 
-  if (row?.cv_file) {
+  if (row?.cv_path) {
     try {
-      await fs.promises.unlink(`${CV_DIR}/${row.cv_file}`);
+      await fs.promises.unlink(`${CV_DIR}/${row.cv_path}`);
     } catch {
       // ignore
     }
@@ -123,7 +161,7 @@ volunteerCvRouter.delete('/', async (req, res) => {
 
   await database
     .updateTable('volunteer_account')
-    .set({ cv_file: null })
+    .set({ cv_path: undefined })
     .where('id', '=', req.userJWT!.id)
     .execute();
 

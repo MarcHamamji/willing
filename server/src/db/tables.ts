@@ -62,7 +62,6 @@ export const volunteerAccountSchema = zod.object({
   experience_vector: zod.string().optional(),
   updated_at: zod.date(),
   created_at: zod.date(),
-  cv_file: zod.string().nullable(),
 });
 export type VolunteerAccount = zod.infer<typeof volunteerAccountSchema>;
 

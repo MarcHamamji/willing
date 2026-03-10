@@ -1,4 +1,4 @@
-import config from '../config.js';
+import config from '../../config.js';
 
 const MAX_REQUESTS = 3;
 const WINDOW_MS = 5 * 60 * 1000;

@@ -9,7 +9,7 @@ import {
   recomputePostingVectors,
   recomputeVolunteerExperienceVector,
   recomputeVolunteerProfileVector,
-} from '../services/embeddingUpdateService.js';
+} from '../services/embeddings/embeddingUpdateService.js';
 
 const TEST_PASSWORD_HASH = await bcrypt.hash('Willing123', 10);
 

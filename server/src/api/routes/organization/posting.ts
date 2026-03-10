@@ -22,7 +22,7 @@ import {
 import {
   recomputePostingVectors,
   recomputeVolunteerExperienceVector,
-} from '../../../services/embeddingUpdateService.js';
+} from '../../../services/embeddings/embeddingUpdateService.js';
 import {
   sendVolunteerApplicationAcceptedEmail,
   sendVolunteerApplicationRejectedEmail,
@@ -443,7 +443,7 @@ postingRouter.get('/:id/applications', async (req, res: Response<OrganizationPos
       'volunteer_account.email',
       'volunteer_account.date_of_birth',
       'volunteer_account.gender',
-      'volunteer_account.cv_file',
+      'volunteer_account.cv_path',
     ])
     .where('enrollment_application.posting_id', '=', postingId)
     .execute();

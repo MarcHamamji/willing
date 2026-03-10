@@ -1,16 +1,16 @@
 import { Kysely, Transaction, sql } from 'kysely';
 
-import { extractCvText } from './cvTextService.js';
 import { runOrDeferEmbeddingJob } from './embeddingRateLimiter.js';
+import database from '../../db/index.js';
+import { type Database, type OrganizationAccount, type OrganizationPosting, type VolunteerAccountWithoutPassword } from '../../db/tables.js';
+import { extractCvText } from '../cv/cvTextService.js';
 import {
   combineVectors,
   embedText,
   parseVectorLiteral,
   vectorToSqlLiteral,
   weightedAverage,
-} from './embeddingService.js';
-import database from '../db/index.js';
-import { type Database, type OrganizationAccount, type OrganizationPosting, type VolunteerAccountWithoutPassword } from '../db/tables.js';
+} from '../embeddings/embeddingService.js';
 
 type DBExecutor = Kysely<Database> | Transaction<Database>;
 

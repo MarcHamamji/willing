@@ -6,7 +6,7 @@ import postingRouter from './posting.js';
 import resetPassword from '../../../auth/resetPassword.js';
 import database from '../../../db/index.js';
 import { newOrganizationRequestSchema, organizationAccountSchema, PostingSkill } from '../../../db/tables.js';
-import { recomputeOrganizationVector } from '../../../services/embeddingUpdateService.js';
+import { recomputeOrganizationVector } from '../../../services/embeddings/embeddingUpdateService.js';
 import { sendAdminOrganizationRequestEmail } from '../../../SMTP/emails.js';
 import { authorizeOnly } from '../../authorization.js';
 

@@ -7,7 +7,7 @@ import { AdminLoginResponse, AdminMeResponse, AdminOrganizationRequestReviewResp
 import resetPassword from '../../../auth/resetPassword.js';
 import config from '../../../config.js';
 import database from '../../../db/index.js';
-import { recomputeOrganizationVector } from '../../../services/embeddingUpdateService.js';
+import { recomputeOrganizationVector } from '../../../services/embeddings/embeddingUpdateService.js';
 import { sendOrganizationAcceptanceEmail, sendOrganizationRejectionEmail } from '../../../SMTP/emails.js';
 import { loginInfoSchema } from '../../../types.js';
 import { authorizeOnly } from '../../authorization.js';

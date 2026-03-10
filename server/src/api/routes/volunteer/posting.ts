@@ -5,8 +5,8 @@ import zod from 'zod';
 import { VolunteerPostingEnrollResponse, VolunteerPostingResponse, VolunteerPostingSearchResponse, VolunteerPostingWithdrawResponse } from './posting.types.js';
 import database from '../../../db/index.js';
 import { Enrollment, EnrollmentApplication } from '../../../db/tables.js';
-import { parseVectorLiteral } from '../../../services/embeddingService.js';
-import { recomputeVolunteerExperienceVector } from '../../../services/embeddingUpdateService.js';
+import { parseVectorLiteral } from '../../../services/embeddings/embeddingService.js';
+import { recomputeVolunteerExperienceVector } from '../../../services/embeddings/embeddingUpdateService.js';
 import { authorizeOnly } from '../../authorization.js';
 
 const volunteerPostingRouter = Router();
