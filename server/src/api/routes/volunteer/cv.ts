@@ -1,6 +1,7 @@
 import fs from 'fs';
 
 import { NextFunction, Router, Request, Response } from 'express';
+import { sql } from 'kysely';
 
 import { DeleteVolunteerCvResponse, UploadVolunteerCvResponse } from './cv.types.js';
 import config from '../../../config.js';
@@ -166,7 +167,7 @@ volunteerCvRouter.delete('/', async (req, res: Response<DeleteVolunteerCvRespons
 
   await database
     .updateTable('volunteer_account')
-    .set({ cv_path: undefined })
+    .set({ cv_path: sql`NULL` })
     .where('id', '=', req.userJWT!.id)
     .execute();
 
