@@ -58,6 +58,9 @@ export function FormField<T extends FieldValues>({
 
   const statusClass = error ? (type === 'textarea' ? 'textarea-error' : (selectOptions ? 'select-error' : 'input-error')) : '';
   const iconPadding = Icon ? 'pl-10' : '';
+  const iconClass = type === 'textarea'
+    ? 'absolute left-3 top-3 opacity-50 z-10'
+    : 'absolute left-3 top-1/2 -translate-y-1/2 opacity-50 z-10';
 
   const handleDateTimeInput = (e: React.FormEvent<HTMLInputElement>) => {
     if (type === 'datetime-local') {
@@ -77,7 +80,7 @@ export function FormField<T extends FieldValues>({
       <div className="relative">
         {Icon && (
           <Icon
-            className="absolute left-3 top-1/2 -translate-y-1/2 opacity-50 z-10"
+            className={iconClass}
             size={18}
           />
         )}
