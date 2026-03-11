@@ -26,7 +26,7 @@ import requestServer from '../../utils/requestServer';
 import type { VolunteerProfileResponse } from '../../../../server/src/api/types';
 
 const DESCRIPTION_MAX_LENGTH = 300;
-const SERVER_BASE_URL = 'http://localhost:9090';
+const SERVER_BASE_URL = import.meta.env.VITE_SERVER_BASE_URL ?? 'http://localhost:9090';
 
 const profileFormSchema = volunteerAccountSchema.omit({
   id: true,
