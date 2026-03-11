@@ -541,7 +541,7 @@ function VolunteerProfile() {
               <div className="card-body">
                 <h5 className="font-bold text-lg">CV</h5>
                 <p className="text-sm opacity-70 mt-1">
-                  Upload your CV as a PDF with exactly 3 pages.
+                  Upload your CV as a PDF with up to 3 pages.
                 </p>
 
                 <div className="mt-4 flex flex-col gap-3">
@@ -599,7 +599,7 @@ function VolunteerProfile() {
                     </button>
 
                     <span className="text-xs opacity-60">
-                      PDF only, exactly 3 pages, up to 5MB.
+                      PDF only, up to 3 pages, up to 5MB.
                     </span>
                   </div>
                 </div>
