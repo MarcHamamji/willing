@@ -11,16 +11,8 @@ export async function up(db: Kysely<unknown>): Promise<void> {
 
   await db.schema
     .alterTable('organization_account')
-    .addColumn('certificate_info_id', 'integer')
-    .execute();
-
-  await db.schema
-    .alterTable('organization_account')
-    .addForeignKeyConstraint(
-      'organization_account_certificate_info_fk',
-      ['certificate_info_id'],
-      'organization_table_info',
-      ['id'],
+    .addColumn('certificate_info_id', 'integer', col =>
+      col.references('organization_table_info.id').onDelete('cascade'),
     )
     .execute();
 }
