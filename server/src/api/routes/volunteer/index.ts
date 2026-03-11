@@ -241,6 +241,5 @@ volunteerRouter.post('/reset-password', resetPassword);
 
 volunteerRouter.use('/profile/cv', volunteerCvRouter);
 volunteerRouter.use('/posting', volunteerPostingRouter);
-volunteerRouter.use('/cv', volunteerCvRouter);
 
 export default volunteerRouter;
