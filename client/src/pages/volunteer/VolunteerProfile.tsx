@@ -21,12 +21,11 @@ import SkillsInput from '../../components/skills/SkillsInput';
 import SkillsList from '../../components/skills/SkillsList';
 import { ToggleButton } from '../../components/ToggleButton';
 import { FormField } from '../../utils/formUtils';
-import requestServer from '../../utils/requestServer';
+import requestServer, { SERVER_BASE_URL } from '../../utils/requestServer';
 
 import type { VolunteerProfileResponse } from '../../../../server/src/api/types';
 
 const DESCRIPTION_MAX_LENGTH = 300;
-const SERVER_BASE_URL = 'http://localhost:9090';
 
 const profileFormSchema = volunteerAccountSchema.omit({
   id: true,
