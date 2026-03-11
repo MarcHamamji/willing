@@ -26,6 +26,7 @@ import requestServer from '../../utils/requestServer';
 import type { VolunteerProfileResponse } from '../../../../server/src/api/types';
 
 const DESCRIPTION_MAX_LENGTH = 300;
+const SERVER_BASE_URL = 'http://localhost:9090';
 
 const profileFormSchema = volunteerAccountSchema.omit({
   id: true,
@@ -282,6 +283,41 @@ function VolunteerProfile() {
       setSaveMessage('CV removed successfully.');
     } catch (error) {
       setSaveError(error instanceof Error ? error.message : 'Failed to remove CV');
+    } finally {
+      setCvBusy(false);
+    }
+  };
+
+  const onViewCv = async () => {
+    try {
+      setCvBusy(true);
+      setSaveError(null);
+
+      const response = await fetch(`${SERVER_BASE_URL}/volunteer/profile/cv/preview`, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem('jwt')}`,
+        },
+      });
+
+      if (!response.ok) {
+        let message = 'Failed to load CV';
+
+        try {
+          const errorBody = await response.json() as { error?: string; message?: string };
+          message = errorBody.message ?? errorBody.error ?? message;
+        } catch {
+          // Ignore JSON parsing errors and fall back to the default message.
+        }
+
+        throw new Error(message);
+      }
+
+      const fileBlob = await response.blob();
+      const previewUrl = URL.createObjectURL(fileBlob);
+      window.open(previewUrl, '_blank', 'noopener,noreferrer');
+      setTimeout(() => URL.revokeObjectURL(previewUrl), 60_000);
+    } catch (error) {
+      setSaveError(error instanceof Error ? error.message : 'Failed to load CV');
     } finally {
       setCvBusy(false);
     }
@@ -548,15 +584,17 @@ function VolunteerProfile() {
                   {profile.volunteer.cv_path
                     ? (
                         <div className="flex flex-wrap items-center gap-3">
-                          <a
-                            href={`http://localhost:9090${profile.volunteer.cv_path}`}
-                            target="_blank"
-                            rel="noreferrer"
+                          <button
+                            type="button"
                             className="btn btn-outline"
+                            onClick={onViewCv}
+                            disabled={cvBusy}
                           >
                             <FileText size={16} />
-                            View Current CV
-                          </a>
+                            {cvBusy
+                              ? 'Opening CV...'
+                              : 'View Current CV'}
+                          </button>
 
                           <button
                             type="button"

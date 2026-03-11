@@ -5,6 +5,7 @@ export * from './routes/admin/index.types.js';
 
 export * from './routes/volunteer/index.types.js';
 export * from './routes/volunteer/posting.types.js';
+export * from './routes/volunteer/cv.types.js';
 
 export * from './routes/organization/index.types.js';
 export * from './routes/organization/posting.types.js';

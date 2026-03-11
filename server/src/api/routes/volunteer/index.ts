@@ -14,6 +14,7 @@ import {
   recomputeVolunteerExperienceVector,
   recomputeVolunteerProfileVector,
 } from '../../../services/embeddings/embeddingUpdateService.js';
+import { getVolunteerProfile } from '../../../services/volunteer/index.js';
 import { authorizeOnly } from '../../authorization.js';
 
 const volunteerRouter = Router();
@@ -37,46 +38,6 @@ const normalizeSkillList = (skills: string[]) =>
 const areSkillListsEqual = (left: string[], right: string[]) => {
   if (left.length !== right.length) return false;
   return left.every((skill, index) => skill === right[index]);
-};
-
-const getVolunteerProfile = async (volunteerId: number): Promise<VolunteerProfileResponse> => {
-  const volunteer = await database
-    .selectFrom('volunteer_account')
-    .select([
-      'id',
-      'first_name',
-      'last_name',
-      'email',
-      'date_of_birth',
-      'gender',
-      'cv_path',
-      'description',
-      'privacy',
-    ])
-    .where('id', '=', volunteerId)
-    .executeTakeFirstOrThrow();
-
-  const volunteerSkills = await database
-    .selectFrom('volunteer_skill')
-    .select('name')
-    .where('volunteer_id', '=', volunteerId)
-    .orderBy('id', 'asc')
-    .execute();
-
-  return {
-    volunteer: {
-      id: volunteer.id,
-      first_name: volunteer.first_name,
-      last_name: volunteer.last_name,
-      email: volunteer.email,
-      date_of_birth: volunteer.date_of_birth,
-      gender: volunteer.gender,
-      privacy: volunteer.privacy,
-      cv_path: volunteer.cv_path,
-      description: volunteer.description ?? '',
-    },
-    skills: volunteerSkills.map(skill => skill.name),
-  };
 };
 
 volunteerRouter.post('/create', async (req, res: Response<VolunteerCreateResponse>) => {
@@ -239,7 +200,7 @@ volunteerRouter.put('/profile', async (req, res: Response<VolunteerProfileRespon
 
 volunteerRouter.post('/reset-password', resetPassword);
 
+volunteerRouter.use('/profile/cv', volunteerCvRouter);
 volunteerRouter.use('/posting', volunteerPostingRouter);
-volunteerRouter.use('/cv', volunteerCvRouter);
 
 export default volunteerRouter;
