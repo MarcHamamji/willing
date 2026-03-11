@@ -1,6 +1,10 @@
 import { Enrollment, EnrollmentApplication, OrganizationPosting, PostingSkill } from '../../../db/tables.js';
 import { PostingWithSkillsAndOrgName, SuccessResponse } from '../../../types.js';
 
+export type VolunteerEnrollmentsResponse = {
+  postings: PostingWithSkillsAndOrgName[];
+};
+
 export type VolunteerPostingSearchResponse = {
   postings: PostingWithSkillsAndOrgName[];
 };

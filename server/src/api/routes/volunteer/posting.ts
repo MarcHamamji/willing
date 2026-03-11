@@ -2,7 +2,7 @@ import { Router, Response } from 'express';
 import { sql } from 'kysely';
 import zod from 'zod';
 
-import { VolunteerPostingEnrollResponse, VolunteerPostingResponse, VolunteerPostingSearchResponse, VolunteerPostingWithdrawResponse } from './posting.types.js';
+import { VolunteerEnrollmentsResponse, VolunteerPostingEnrollResponse, VolunteerPostingResponse, VolunteerPostingSearchResponse, VolunteerPostingWithdrawResponse } from './posting.types.js';
 import database from '../../../db/index.js';
 import { Enrollment, EnrollmentApplication } from '../../../db/tables.js';
 import { parseVectorLiteral } from '../../../services/embeddings/embeddingService.js';
@@ -160,6 +160,45 @@ volunteerPostingRouter.get('/', async (req, res: Response<VolunteerPostingSearch
   }));
 
   res.json({ postings: postingWithSkills });
+});
+
+volunteerPostingRouter.get('/enrollments', async (req, res: Response<VolunteerEnrollmentsResponse>) => {
+  const volunteerId = req.userJWT!.id;
+
+  const enrolledPostings = await database
+    .selectFrom('enrollment')
+    .innerJoin('organization_posting', 'organization_posting.id', 'enrollment.posting_id')
+    .innerJoin('organization_account', 'organization_account.id', 'organization_posting.organization_id')
+    .selectAll('organization_posting')
+    .select(['organization_account.name as organization_name'])
+    .where('enrollment.volunteer_id', '=', volunteerId)
+    .orderBy('organization_posting.start_timestamp', 'asc')
+    .execute();
+
+  const postingIds = enrolledPostings.map(p => p.id);
+
+  const skills = postingIds.length > 0
+    ? await database
+        .selectFrom('posting_skill')
+        .selectAll()
+        .where('posting_id', 'in', postingIds)
+        .execute()
+    : [];
+
+  const skillsByPostingId = new Map<number, typeof skills>();
+  skills.forEach((skill) => {
+    if (!skillsByPostingId.has(skill.posting_id)) {
+      skillsByPostingId.set(skill.posting_id, []);
+    }
+    skillsByPostingId.get(skill.posting_id)!.push(skill);
+  });
+
+  const postings = enrolledPostings.map(posting => ({
+    ...posting,
+    skills: skillsByPostingId.get(posting.id) ?? [],
+  }));
+
+  res.json({ postings });
 });
 
 volunteerPostingRouter.get('/:id', async (req, res: Response<VolunteerPostingResponse>) => {

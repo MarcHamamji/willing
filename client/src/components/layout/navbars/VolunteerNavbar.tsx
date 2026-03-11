@@ -1,4 +1,4 @@
-import { User, ChevronDown, LogOut, Home, Settings } from 'lucide-react';
+import { User, ChevronDown, LogOut, Home, Search, Settings } from 'lucide-react';
 import { useCallback, useContext } from 'react';
 import { NavLink } from 'react-router';
 
@@ -29,6 +29,10 @@ function VolunteerNavbar() {
           <NavLink to="/volunteer" end className={softTabStyle}>
             <Home size={20} />
             Home
+          </NavLink>
+          <NavLink to="/volunteer/search" className={softTabStyle}>
+            <Search size={20} />
+            Search
           </NavLink>
           <NavLink to="/volunteer/profile" className={softTabStyle}>
             <User size={20} />
