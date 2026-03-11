@@ -13,16 +13,8 @@ export async function up(db: Kysely<unknown>): Promise<void> {
 
   await db.schema
     .alterTable('organization_posting')
-    .addColumn('crisis_id', 'integer')
-    .execute();
-
-  await db.schema
-    .alterTable('organization_posting')
-    .addForeignKeyConstraint(
-      'organization_posting_crisis_fk',
-      ['crisis_id'],
-      'crisis',
-      ['id'],
+    .addColumn('crisis_id', 'integer', col =>
+      col.references('crisis.id').onDelete('cascade'),
     )
     .execute();
 }
