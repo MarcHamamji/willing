@@ -152,6 +152,12 @@ export type NewOrganizationAccount = zod.infer<typeof newOrganizationAccountSche
 export const organizationAccountUpdate = organizationAccountSchema.omit({ password: true, org_vector: true, created_at: true, updated_at: true });
 export type OrganizationAccountWithoutPassword = zod.infer<typeof organizationAccountUpdate>;
 
+export const organizationAccountWithoutPasswordWithTimestampsSchema = organizationAccountSchema.omit({
+  password: true,
+  org_vector: true,
+});
+export type OrganizationAccountWithoutPasswordWithTimestamps = zod.infer<typeof organizationAccountWithoutPasswordWithTimestampsSchema>;
+
 // admin_account
 
 export const adminAccountSchema = zod.object({
@@ -229,6 +235,12 @@ export const newOrganizationPostingSchema = organizationPostingSchema
       .optional(),
   });
 export type NewOrganizationPosting = zod.infer<typeof newOrganizationPostingSchema>;
+
+export const organizationPostingWithoutVectorsSchema = organizationPostingSchema.omit({
+  opportunity_vector: true,
+  posting_context_vector: true,
+});
+export type OrganizationPostingWithoutVectors = zod.infer<typeof organizationPostingWithoutVectorsSchema>;
 
 // posting_skill
 

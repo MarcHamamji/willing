@@ -5,9 +5,9 @@ import zod from 'zod';
 import { VolunteerEnrollmentsResponse, VolunteerPostingEnrollResponse, VolunteerPostingResponse, VolunteerPostingSearchResponse, VolunteerPostingWithdrawResponse } from './posting.types.js';
 import database from '../../../db/index.js';
 import { Enrollment, EnrollmentApplication } from '../../../db/tables.js';
-import { parseVectorLiteral } from '../../../services/embeddings/embeddingService.js';
 import { recomputeVolunteerExperienceVector } from '../../../services/embeddings/embeddingUpdateService.js';
 import { authorizeOnly } from '../../authorization.js';
+import { organizationPostingResponseColumns } from '../../responseColumns.js';
 
 const volunteerPostingRouter = Router();
 
@@ -34,8 +34,8 @@ volunteerPostingRouter.get('/', async (req, res: Response<VolunteerPostingSearch
 
   const profileVectorLiteral = volunteerVectors.profile_vector;
   const experienceVectorLiteral = volunteerVectors.experience_vector;
-  const hasProfileVector = parseVectorLiteral(profileVectorLiteral) !== null;
-  const hasExperienceVector = parseVectorLiteral(experienceVectorLiteral) !== null;
+  const hasProfileVector = Boolean(profileVectorLiteral);
+  const hasExperienceVector = Boolean(experienceVectorLiteral);
 
   let query = database
     .selectFrom('organization_posting')
@@ -44,7 +44,7 @@ volunteerPostingRouter.get('/', async (req, res: Response<VolunteerPostingSearch
       'organization_account.id',
       'organization_posting.organization_id',
     )
-    .selectAll('organization_posting')
+    .select(organizationPostingResponseColumns)
     .select(['organization_account.name as organization_name']);
 
   if (skillFilter) {
@@ -170,7 +170,7 @@ volunteerPostingRouter.get('/enrollments', async (req, res: Response<VolunteerEn
       .selectFrom('enrollment')
       .innerJoin('organization_posting', 'organization_posting.id', 'enrollment.posting_id')
       .innerJoin('organization_account', 'organization_account.id', 'organization_posting.organization_id')
-      .selectAll('organization_posting')
+      .select(organizationPostingResponseColumns)
       .select(['organization_account.name as organization_name'])
       .where('enrollment.volunteer_id', '=', volunteerId)
       .execute(),
@@ -178,7 +178,7 @@ volunteerPostingRouter.get('/enrollments', async (req, res: Response<VolunteerEn
       .selectFrom('enrollment_application')
       .innerJoin('organization_posting', 'organization_posting.id', 'enrollment_application.posting_id')
       .innerJoin('organization_account', 'organization_account.id', 'organization_posting.organization_id')
-      .selectAll('organization_posting')
+      .select(organizationPostingResponseColumns)
       .select(['organization_account.name as organization_name'])
       .where('enrollment_application.volunteer_id', '=', volunteerId)
       .execute(),
@@ -232,7 +232,7 @@ volunteerPostingRouter.get('/:id', async (req, res: Response<VolunteerPostingRes
 
   const posting = await database
     .selectFrom('organization_posting')
-    .selectAll()
+    .select(organizationPostingResponseColumns)
     .where('organization_posting.id', '=', id)
     .executeTakeFirst();
 

@@ -27,6 +27,7 @@ import {
   sendVolunteerApplicationAcceptedEmail,
   sendVolunteerApplicationRejectedEmail,
 } from '../../../SMTP/emails.js';
+import { organizationPostingResponseColumns } from '../../responseColumns.js';
 
 const postingRouter = Router();
 const organizationPostingUpdateSchema = newOrganizationPostingSchema.partial();
@@ -65,7 +66,7 @@ postingRouter.post('/', async (req, res: Response<OrganizationPostingCreateRespo
         is_open: body.is_open ?? true,
         location_name: body.location_name,
       })
-      .returningAll()
+      .returning('id')
       .executeTakeFirst();
 
     if (!newPosting) {
@@ -88,7 +89,7 @@ postingRouter.post('/', async (req, res: Response<OrganizationPostingCreateRespo
 
   const posting = await database
     .selectFrom('organization_posting')
-    .selectAll()
+    .select(organizationPostingResponseColumns)
     .where('id', '=', result.postingId)
     .executeTakeFirstOrThrow();
 
@@ -106,7 +107,7 @@ postingRouter.get('/', async (req, res: Response<OrganizationPostingListResponse
 
   const postings = await database
     .selectFrom('organization_posting')
-    .selectAll()
+    .select(organizationPostingResponseColumns)
     .where('organization_id', '=', orgId)
     .orderBy('start_timestamp', 'asc')
     .execute();
@@ -142,7 +143,7 @@ postingRouter.get('/:id', async (req, res: Response<OrganizationPostingResponse>
 
   const posting = await database
     .selectFrom('organization_posting')
-    .selectAll()
+    .select(organizationPostingResponseColumns)
     .where('organization_posting.id', '=', postingId)
     .where('organization_posting.organization_id', '=', orgId)
     .executeTakeFirst();
@@ -357,7 +358,7 @@ postingRouter.put('/:id', async (req, res: Response<OrganizationPostingUpdateRes
 
   const updatedPosting = await database
     .selectFrom('organization_posting')
-    .selectAll()
+    .select(organizationPostingResponseColumns)
     .where('id', '=', postingId)
     .where('organization_id', '=', orgId)
     .executeTakeFirstOrThrow();

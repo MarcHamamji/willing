@@ -15,6 +15,7 @@ import database from '../../db/index.js';
 import { passwordSchema } from '../../db/tables.js';
 import { sendPasswordResetEmail } from '../../SMTP/emails.js';
 import { loginInfoSchema } from '../../types.js';
+import { organizationLoginColumns, volunteerLoginColumns } from '../responseColumns.js';
 
 const userRouter = Router();
 
@@ -36,14 +37,14 @@ userRouter.post('/login', async (req, res: Response<UserLoginResponse>) => {
   // eslint-disable-next-line prefer-const
   organizationAccount = await database
     .selectFrom('organization_account')
-    .selectAll()
+    .select(organizationLoginColumns)
     .where('organization_account.email', '=', body.email)
     .executeTakeFirst();
 
   if (!organizationAccount) {
     volunteerAccount = await database
       .selectFrom('volunteer_account')
-      .selectAll()
+      .select(volunteerLoginColumns)
       .where('volunteer_account.email', '=', body.email)
       .executeTakeFirst();
   }
@@ -90,7 +91,7 @@ userRouter.post('/forgot-password', async (req, res: Response<UserForgotPassword
 
   const organizationAccount = await database
     .selectFrom('organization_account')
-    .selectAll()
+    .select(['id', 'name', 'email'])
     .where('organization_account.email', '=', body.email)
     .executeTakeFirst();
 
@@ -102,7 +103,7 @@ userRouter.post('/forgot-password', async (req, res: Response<UserForgotPassword
   } else {
     volunteerAccount = await database
       .selectFrom('volunteer_account')
-      .selectAll()
+      .select(['id', 'first_name', 'last_name', 'email'])
       .where('volunteer_account.email', '=', body.email)
       .executeTakeFirst();
 

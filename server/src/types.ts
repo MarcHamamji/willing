@@ -1,7 +1,7 @@
 import zod from 'zod';
 
 import {
-  type OrganizationPosting,
+  type OrganizationPostingWithoutVectors,
   type PostingSkill,
   VolunteerSkill,
   VolunteerAccountWithoutPassword,
@@ -26,7 +26,7 @@ export const loginInfoSchema = zod.object({
 
 export type LoginInfo = zod.infer<typeof loginInfoSchema>;
 
-export type PostingWithSkills = OrganizationPosting & {
+export type PostingWithSkills = OrganizationPostingWithoutVectors & {
   skills: PostingSkill[];
 };
 

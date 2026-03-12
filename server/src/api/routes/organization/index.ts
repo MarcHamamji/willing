@@ -9,6 +9,11 @@ import { newOrganizationRequestSchema, organizationAccountSchema, PostingSkill }
 import { recomputeOrganizationVector } from '../../../services/embeddings/embeddingUpdateService.js';
 import { sendAdminOrganizationRequestEmail } from '../../../SMTP/emails.js';
 import { authorizeOnly } from '../../authorization.js';
+import {
+  organizationPostingResponseColumns,
+  organizationPrivateResponseColumns,
+  organizationProfileResponseColumns,
+} from '../../responseColumns.js';
 
 const organizationRouter = Router();
 const organizationProfileUpdateSchema = organizationAccountSchema.omit({
@@ -83,18 +88,7 @@ organizationRouter.get('/:id', async (req, res: Response<OrganizationProfileResp
 
   const organization = await database
     .selectFrom('organization_account')
-    .select([
-      'id',
-      'name',
-      'email',
-      'phone_number',
-      'url',
-      'latitude',
-      'longitude',
-      'location_name',
-      'created_at',
-      'updated_at',
-    ])
+    .select(organizationProfileResponseColumns)
     .where('id', '=', orgId)
     .executeTakeFirst();
 
@@ -106,7 +100,7 @@ organizationRouter.get('/:id', async (req, res: Response<OrganizationProfileResp
   // Fetch organization's postings
   const postings = await database
     .selectFrom('organization_posting')
-    .selectAll()
+    .select(organizationPostingResponseColumns)
     .where('organization_id', '=', orgId)
     .orderBy('start_timestamp', 'asc')
     .execute();
@@ -143,12 +137,9 @@ organizationRouter.use(authorizeOnly('organization'));
 organizationRouter.get('/me', async (req, res: Response<OrganizationMeResponse>) => {
   const organization = await database
     .selectFrom('organization_account')
-    .selectAll()
+    .select(organizationPrivateResponseColumns)
     .where('id', '=', req.userJWT!.id)
     .executeTakeFirstOrThrow();
-
-  // @ts-expect-error: do not return the password
-  delete organization.password;
 
   res.json({ organization });
 });
@@ -190,12 +181,9 @@ organizationRouter.put('/profile', async (req, res) => {
 
   const organization = await database
     .selectFrom('organization_account')
-    .selectAll()
+    .select(organizationPrivateResponseColumns)
     .where('id', '=', organizationId)
     .executeTakeFirstOrThrow();
-
-  // @ts-expect-error: do not return the password
-  delete organization.password;
 
   res.json({ organization });
 });
