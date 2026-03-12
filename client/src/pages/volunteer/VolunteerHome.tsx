@@ -30,6 +30,11 @@ const RailLoadingState = () => (
   </div>
 );
 
+const getPostingCrisisId = (posting: PostingWithSkillsAndOrgName): number | undefined => {
+  const maybePosting = posting as PostingWithSkillsAndOrgName & { crisis_id?: unknown };
+  return typeof maybePosting.crisis_id === 'number' ? maybePosting.crisis_id : undefined;
+};
+
 function VolunteerHome() {
   const {
     data: enrolledPostings,
@@ -69,6 +74,23 @@ function VolunteerHome() {
 
   const forYouPostings = (allPostings ?? []).slice(0, 8);
   const featuredCrises = (pinnedCrises ?? []).slice(0, 8);
+  const postingsByCrisisId = new Map<number, PostingWithSkillsAndOrgName[]>();
+
+  (allPostings ?? []).forEach((posting) => {
+    const crisisId = getPostingCrisisId(posting);
+    if (crisisId === undefined) return;
+
+    const crisisPostings = postingsByCrisisId.get(crisisId) ?? [];
+    crisisPostings.push(posting);
+    postingsByCrisisId.set(crisisId, crisisPostings);
+  });
+
+  const featuredCrisesWithPostings = featuredCrises
+    .map(crisis => ({
+      crisis,
+      postings: postingsByCrisisId.get(crisis.id) ?? [],
+    }))
+    .filter(({ postings }) => postings.length > 0);
 
   return (
     <div className="grow bg-base-200">
@@ -115,12 +137,12 @@ function VolunteerHome() {
             </div>
           )}
 
-          {!crisesLoading && !crisesError && featuredCrises.map(crisis => (
+          {!crisesLoading && !crisesError && featuredCrisesWithPostings.map(({ crisis, postings }) => (
             <HorizontalScrollSection
               key={crisis.id}
               title={crisis.name}
               subtitle={crisis.description || 'No description provided.'}
-              hasItems={false}
+              hasItems={postings.length > 0}
               action={(
                 <Link
                   to={`/volunteer/crises/${crisis.id}/postings`}
@@ -130,12 +152,11 @@ function VolunteerHome() {
                   View All
                 </Link>
               )}
-              emptyState={(
-                <div className="alert bg-base-100 shadow-sm">
-                  <span>No postings are tagged to this crisis yet.</span>
-                </div>
-              )}
-            />
+            >
+              {postings.map(posting => (
+                <PostingRailCard key={posting.id} posting={posting} />
+              ))}
+            </HorizontalScrollSection>
           ))}
 
           <HorizontalScrollSection
