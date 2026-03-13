@@ -11,6 +11,47 @@ import { sendAdminOrganizationRequestEmail } from '../../../SMTP/emails.js';
 import { authorizeOnly } from '../../authorization.js';
 
 const organizationRouter = Router();
+const organizationProfileResponseColumns = [
+  'id',
+  'name',
+  'email',
+  'phone_number',
+  'url',
+  'latitude',
+  'longitude',
+  'location_name',
+  'created_at',
+  'updated_at',
+] as const;
+
+const organizationPrivateResponseColumns = [
+  'id',
+  'name',
+  'email',
+  'phone_number',
+  'url',
+  'latitude',
+  'longitude',
+  'location_name',
+] as const;
+
+const organizationPostingResponseColumns = [
+  'organization_posting.id',
+  'organization_posting.organization_id',
+  'organization_posting.title',
+  'organization_posting.description',
+  'organization_posting.latitude',
+  'organization_posting.longitude',
+  'organization_posting.max_volunteers',
+  'organization_posting.start_timestamp',
+  'organization_posting.end_timestamp',
+  'organization_posting.minimum_age',
+  'organization_posting.is_open',
+  'organization_posting.location_name',
+  'organization_posting.created_at',
+  'organization_posting.updated_at',
+] as const;
+
 const organizationProfileUpdateSchema = organizationAccountSchema.omit({
   id: true,
   password: true,
@@ -83,18 +124,7 @@ organizationRouter.get('/:id', async (req, res: Response<OrganizationProfileResp
 
   const organization = await database
     .selectFrom('organization_account')
-    .select([
-      'id',
-      'name',
-      'email',
-      'phone_number',
-      'url',
-      'latitude',
-      'longitude',
-      'location_name',
-      'created_at',
-      'updated_at',
-    ])
+    .select(organizationProfileResponseColumns)
     .where('id', '=', orgId)
     .executeTakeFirst();
 
@@ -106,7 +136,7 @@ organizationRouter.get('/:id', async (req, res: Response<OrganizationProfileResp
   // Fetch organization's postings
   const postings = await database
     .selectFrom('organization_posting')
-    .selectAll()
+    .select(organizationPostingResponseColumns)
     .where('organization_id', '=', orgId)
     .orderBy('start_timestamp', 'asc')
     .execute();
@@ -143,12 +173,9 @@ organizationRouter.use(authorizeOnly('organization'));
 organizationRouter.get('/me', async (req, res: Response<OrganizationMeResponse>) => {
   const organization = await database
     .selectFrom('organization_account')
-    .selectAll()
+    .select(organizationPrivateResponseColumns)
     .where('id', '=', req.userJWT!.id)
     .executeTakeFirstOrThrow();
-
-  // @ts-expect-error: do not return the password
-  delete organization.password;
 
   res.json({ organization });
 });
@@ -190,12 +217,9 @@ organizationRouter.put('/profile', async (req, res) => {
 
   const organization = await database
     .selectFrom('organization_account')
-    .selectAll()
+    .select(organizationPrivateResponseColumns)
     .where('id', '=', organizationId)
     .executeTakeFirstOrThrow();
-
-  // @ts-expect-error: do not return the password
-  delete organization.password;
 
   res.json({ organization });
 });

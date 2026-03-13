@@ -23,6 +23,18 @@ import { getVolunteerProfile } from '../../../services/volunteer/index.js';
 import { authorizeOnly } from '../../authorization.js';
 
 const volunteerRouter = Router();
+const volunteerResponseColumns = [
+  'id',
+  'first_name',
+  'last_name',
+  'email',
+  'date_of_birth',
+  'gender',
+  'cv_path',
+  'description',
+  'privacy',
+] as const;
+
 const volunteerProfileUserUpdateSchema = volunteerAccountSchema.omit({
   id: true,
   password: true,
@@ -72,7 +84,7 @@ volunteerRouter.post('/create', async (req, res: Response<VolunteerCreateRespons
       gender: body.gender,
       privacy: 'public',
     })
-    .returningAll()
+    .returning(volunteerResponseColumns)
     .executeTakeFirst();
 
   if (!newVolunteer) {
@@ -89,9 +101,6 @@ volunteerRouter.post('/create', async (req, res: Response<VolunteerCreateRespons
     .setExpirationTime('7d')
     .sign(new TextEncoder().encode(config.JWT_SECRET));
 
-  // @ts-expect-error: do not return the password
-  delete newVolunteer.password;
-
   res.json({ volunteer: newVolunteer, token });
 });
 
@@ -100,12 +109,9 @@ volunteerRouter.use(authorizeOnly('volunteer'));
 volunteerRouter.get('/me', async (req, res: Response<VolunteerMeResponse>) => {
   const volunteer = await database
     .selectFrom('volunteer_account')
-    .selectAll()
+    .select(volunteerResponseColumns)
     .where('id', '=', req.userJWT!.id)
     .executeTakeFirstOrThrow();
-
-  // @ts-expect-error: do not return the password
-  delete volunteer.password;
 
   res.json({ volunteer });
 });

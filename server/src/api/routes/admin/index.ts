@@ -19,6 +19,16 @@ import { loginInfoSchema } from '../../../types.js';
 import { authorizeOnly } from '../../authorization.js';
 
 const adminRouter = Router();
+const organizationPrivateResponseColumns = [
+  'id',
+  'name',
+  'email',
+  'phone_number',
+  'url',
+  'latitude',
+  'longitude',
+  'location_name',
+] as const;
 
 adminRouter.post('/login', async (req, res: Response<AdminLoginResponse>) => {
   const body = loginInfoSchema.parse(req.body);
@@ -131,7 +141,7 @@ adminRouter.post('/reviewOrganizationRequest', async (req, res: Response<AdminOr
         location_name: organizationRequest.location_name,
         password: await bcrypt.hash(password, 10),
       })
-      .returningAll()
+      .returning(organizationPrivateResponseColumns)
       .executeTakeFirst();
   });
 
@@ -143,9 +153,6 @@ adminRouter.post('/reviewOrganizationRequest', async (req, res: Response<AdminOr
   await recomputeOrganizationVector(insertedOrganization.id);
 
   await sendOrganizationAcceptanceEmail(organizationRequest, password);
-
-  // @ts-expect-error: Do not return the password
-  delete insertedOrganization.password;
 
   res.json({
     organization: insertedOrganization,
