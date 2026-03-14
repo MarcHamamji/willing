@@ -28,19 +28,26 @@ function PostingCard({ posting, organization }: PostingCardProps) {
               </Link>
             </h2>
           </div>
-          {posting.is_open
+          {posting.is_closed
             ? (
-                <span className="badge badge-primary gap-1 shrink-0">
-                  <LockOpen size={12} />
-                  Open
+                <span className="badge badge-error gap-1 shrink-0">
+                  <Clock size={12} />
+                  Closed
                 </span>
               )
-            : (
-                <span className="badge badge-secondary gap-1 shrink-0">
-                  <Clock size={12} />
-                  Review Based
-                </span>
-              )}
+            : posting.automatic_acceptance
+              ? (
+                  <span className="badge badge-primary gap-1 shrink-0">
+                    <LockOpen size={12} />
+                    Open
+                  </span>
+                )
+              : (
+                  <span className="badge badge-secondary gap-1 shrink-0">
+                    <Clock size={12} />
+                    Review Based
+                  </span>
+                )}
         </div>
         <div className="flex items-start justify-between gap-3 mb-2">
           <p className="text-sm opacity-80 line-clamp-2">{posting.description}</p>

@@ -64,7 +64,8 @@ export const organizationPostingFormSchema = newOrganizationPostingSchema
       ),
     max_volunteers: z.string().optional(),
     minimum_age: z.string().optional(),
-    is_open: z.boolean(),
+    automatic_acceptance: z.boolean(),
+    is_closed: z.boolean(),
   });
 
 export type OrganizationPostingFormData = z.infer<typeof organizationPostingFormSchema>;

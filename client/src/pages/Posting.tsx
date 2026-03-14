@@ -79,13 +79,14 @@ function PostingPage() {
     mode: 'onTouched',
     reValidateMode: 'onChange',
     defaultValues: {
-      is_open: true,
+      automatic_acceptance: true,
+      is_closed: false,
     },
   });
 
   const isOpen = useWatch({
     control: form.control,
-    name: 'is_open',
+    name: 'automatic_acceptance',
     defaultValue: true,
   });
 
@@ -144,7 +145,8 @@ function PostingPage() {
             : undefined,
           max_volunteers: postingResponse.posting.max_volunteers?.toString() ?? undefined,
           minimum_age: postingResponse.posting.minimum_age?.toString() ?? undefined,
-          is_open: postingResponse.posting.is_open,
+          automatic_acceptance: postingResponse.posting.automatic_acceptance,
+          is_closed: postingResponse.posting.is_closed,
         });
 
         return;
@@ -163,7 +165,7 @@ function PostingPage() {
       setPosting(postingWithSkills);
       setEnrollments(enrollmentsResponse.enrollments);
 
-      if (!postingResponse.posting.is_open) {
+      if (!postingResponse.posting.automatic_acceptance) {
         const applicationsResponse = await requestServer<OrganizationPostingApplicationsReponse>(
           `/organization/posting/${id}/applications`,
           { includeJwt: true },
@@ -199,7 +201,8 @@ function PostingPage() {
           : undefined,
         max_volunteers: postingResponse.posting.max_volunteers?.toString() ?? undefined,
         minimum_age: postingResponse.posting.minimum_age?.toString() ?? undefined,
-        is_open: postingResponse.posting.is_open,
+        automatic_acceptance: postingResponse.posting.automatic_acceptance,
+        is_closed: postingResponse.posting.is_closed,
       });
     } catch (error) {
       setFetchError(error instanceof Error ? error.message : 'Failed to load posting');
@@ -250,7 +253,8 @@ function PostingPage() {
           end_timestamp: data.end_timestamp ? new Date(data.end_timestamp).toISOString() : undefined,
           max_volunteers: data.max_volunteers ? Number(data.max_volunteers) : undefined,
           minimum_age: data.minimum_age ? Number(data.minimum_age) : undefined,
-          is_open: data.is_open,
+          automatic_acceptance: data.automatic_acceptance,
+          is_closed: data.is_closed,
           skills: skills.length > 0 ? skills : undefined,
         };
 
@@ -290,7 +294,8 @@ function PostingPage() {
       end_timestamp: posting.end_timestamp ? getDateTimeInputValue(posting.end_timestamp) : undefined,
       max_volunteers: posting.max_volunteers?.toString() ?? undefined,
       minimum_age: posting.minimum_age?.toString() ?? undefined,
-      is_open: posting.is_open,
+      automatic_acceptance: posting.automatic_acceptance,
+      is_closed: posting.is_closed,
     });
     setSkills(posting.skills.map(s => s.name));
     setPosition([
@@ -722,7 +727,7 @@ function PostingPage() {
                       ? (
                           <ToggleButton
                             form={form}
-                            name="is_open"
+                            name="automatic_acceptance"
                             label="Posting Type"
                             disabled={saving}
                             options={[
@@ -744,16 +749,45 @@ function PostingPage() {
                           />
                         )
                       : (
-                          <span className={`badge gap-2 ${isOpen ? 'badge-primary' : 'badge-secondary'}`}>
-                            {isOpen ? <LockOpen size={12} /> : <Lock size={12} />}
-                            {isOpen ? 'Open' : 'Review Based'}
+                          <span className={`badge gap-2 ${posting?.is_closed ? 'badge-error' : isOpen ? 'badge-primary' : 'badge-secondary'}`}>
+                            {posting?.is_closed ? <Lock size={12} /> : isOpen ? <LockOpen size={12} /> : <Lock size={12} />}
+                            {posting?.is_closed ? 'Closed' : isOpen ? 'Open' : 'Review Based'}
                           </span>
                         )}
                     <p className="text-xs opacity-70 mt-2">
-                      {isOpen
-                        ? 'Volunteers are accepted automatically.'
-                        : 'Volunteers must be accepted by the organization.'}
+                      {posting?.is_closed
+                        ? 'This posting is closed and no longer accepting applications.'
+                        : isOpen
+                          ? 'Volunteers are accepted automatically.'
+                          : 'Volunteers must be accepted by the organization.'}
                     </p>
+
+                    {isEditMode && (
+                      <div className="mt-4">
+                        <ToggleButton
+                          form={form}
+                          name="is_closed"
+                          label="Close Posting"
+                          disabled={saving}
+                          options={[
+                            {
+                              value: false,
+                              label: 'Open',
+                              description: 'Posting is active.',
+                              Icon: LockOpen,
+                              btnColor: 'btn-primary',
+                            },
+                            {
+                              value: true,
+                              label: 'Closed',
+                              description: 'Posting is closed.',
+                              Icon: Lock,
+                              btnColor: 'btn-error',
+                            },
+                          ]}
+                        />
+                      </div>
+                    )}
 
                   </div>
                 </div>

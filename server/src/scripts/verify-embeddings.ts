@@ -63,7 +63,8 @@ const ensurePosting = async (organizationId: number) => {
       start_timestamp: new Date('2026-03-01T09:00:00Z'),
       end_timestamp: new Date('2026-03-01T12:00:00Z'),
       minimum_age: 18,
-      is_open: true,
+      automatic_acceptance: true,
+      is_closed: false,
     })
     .returning('id')
     .executeTakeFirstOrThrow();

@@ -181,11 +181,55 @@ async function seed() {
 
   const volByEmail = new Map(volunteers.map(v => [v.email, v.id]));
 
+  const crises = await database.insertInto('crisis')
+    .values([
+      {
+        name: 'Lebanon Flood Relief',
+        description: 'Coordinated response for families impacted by severe flooding. Focuses on distribution of supplies and shelter setup.',
+        pinned: true,
+      },
+      {
+        name: 'Medical Emergency Response',
+        description: 'Support medical teams in treating injured individuals from sudden disasters. Includes logistics, patient transport, and supply coordination.',
+        pinned: true,
+      },
+      {
+        name: 'Refugee Assistance Crisis',
+        description: 'Aid refugees arriving due to regional instability by helping with registration, shelter setup, and basic necessities distribution.',
+        pinned: false,
+      },
+      {
+        name: 'Earthquake Recovery Effort',
+        description: 'Large-scale recovery operation after a major earthquake. Volunteers support debris removal, shelter construction, and supply distribution.',
+        pinned: false,
+      },
+      {
+        name: 'Fire Evacuation Support',
+        description: 'Immediate support for people displaced by fires. Focuses on evacuation assistance, temporary shelter coordination, and supplies.',
+        pinned: false,
+      },
+      {
+        name: 'Power Outage Response',
+        description: 'Coordinate emergency power distribution and support vulnerable communities during widespread outages.',
+        pinned: false,
+      },
+      {
+        name: 'Marc Hamamji Mountain Rescue',
+        description: 'Specialized rescue mission to locate and extract a stranded hiker in dangerous mountainous terrain.',
+        pinned: false,
+      },
+    ])
+    .returning(['id', 'name'])
+    .execute();
+
+  const crisisByName = new Map(crises.map(c => [c.name, c.id]));
+
   const nowYear = 2026;
   const postings = await database.insertInto('organization_posting')
     .values([
       {
         organization_id: orgByName.get('Org One')!,
+        crisis_id: crisisByName.get('Lebanon Flood Relief')!,
         title: 'Food Packing',
         description: 'Pack food boxes for families.',
         latitude: 33.8938,
@@ -193,12 +237,14 @@ async function seed() {
         location_name: 'Beirut',
         max_volunteers: 10,
         start_timestamp: new Date(`${nowYear}-01-10T10:00:00Z`),
-        end_timestamp: new Date(`${nowYear}-01-10T14:00:00Z`),
+        end_timestamp: new Date(`${nowYear}-01-12T14:00:00Z`),
         minimum_age: 16,
-        is_open: true,
+        automatic_acceptance: true,
+        is_closed: false,
       },
       {
         organization_id: orgByName.get('Org One')!,
+        crisis_id: crisisByName.get('Refugee Assistance Crisis')!,
         title: 'Beach Cleanup',
         description: 'Clean up the beach area.',
         latitude: 33.905,
@@ -206,12 +252,14 @@ async function seed() {
         location_name: 'Beirut Coast',
         max_volunteers: 25,
         start_timestamp: new Date(`${nowYear}-01-12T08:00:00Z`),
-        end_timestamp: new Date(`${nowYear}-01-12T12:00:00Z`),
+        end_timestamp: undefined,
         minimum_age: 14,
-        is_open: true,
+        automatic_acceptance: true,
+        is_closed: false,
       },
       {
         organization_id: orgByName.get('Org One')!,
+        crisis_id: crisisByName.get('Power Outage Response')!,
         title: 'Winter Clothes Drive',
         description: 'Collect, fold, and prepare winter clothes for distribution.',
         latitude: 33.89,
@@ -219,9 +267,10 @@ async function seed() {
         location_name: 'Hamra',
         max_volunteers: 14,
         start_timestamp: new Date(`${nowYear}-01-14T09:00:00Z`),
-        end_timestamp: new Date(`${nowYear}-01-14T15:00:00Z`),
+        end_timestamp: new Date(`${nowYear}-01-16T15:00:00Z`),
         minimum_age: 16,
-        is_open: true,
+        automatic_acceptance: true,
+        is_closed: false,
       },
       {
         organization_id: orgByName.get('Org Two')!,
@@ -232,9 +281,10 @@ async function seed() {
         location_name: 'Saida',
         max_volunteers: 6,
         start_timestamp: new Date(`${nowYear}-01-15T15:00:00Z`),
-        end_timestamp: new Date(`${nowYear}-01-15T17:00:00Z`),
+        end_timestamp: new Date(`${nowYear}-01-17T17:00:00Z`),
         minimum_age: 18,
-        is_open: false,
+        automatic_acceptance: false,
+        is_closed: false,
       },
       {
         organization_id: orgByName.get('Org Two')!,
@@ -245,9 +295,10 @@ async function seed() {
         location_name: 'Saida Center',
         max_volunteers: 12,
         start_timestamp: new Date(`${nowYear}-01-18T09:00:00Z`),
-        end_timestamp: new Date(`${nowYear}-01-18T13:00:00Z`),
+        end_timestamp: undefined,
         minimum_age: 16,
-        is_open: true,
+        automatic_acceptance: true,
+        is_closed: false,
       },
       {
         organization_id: orgByName.get('Org Two')!,
@@ -258,9 +309,10 @@ async function seed() {
         location_name: 'Saida Office',
         max_volunteers: 9,
         start_timestamp: new Date(`${nowYear}-01-19T16:00:00Z`),
-        end_timestamp: new Date(`${nowYear}-01-19T19:00:00Z`),
+        end_timestamp: new Date(`${nowYear}-01-22T19:00:00Z`),
         minimum_age: 18,
-        is_open: false,
+        automatic_acceptance: false,
+        is_closed: false,
       },
       {
         organization_id: orgByName.get('Org Three')!,
@@ -271,9 +323,10 @@ async function seed() {
         location_name: 'Tripoli',
         max_volunteers: 8,
         start_timestamp: new Date(`${nowYear}-01-20T10:00:00Z`),
-        end_timestamp: new Date(`${nowYear}-01-20T13:00:00Z`),
+        end_timestamp: new Date(`${nowYear}-01-22T13:00:00Z`),
         minimum_age: 16,
-        is_open: true,
+        automatic_acceptance: true,
+        is_closed: false,
       },
       {
         organization_id: orgByName.get('Org Three')!,
@@ -284,9 +337,10 @@ async function seed() {
         location_name: 'Tripoli Home',
         max_volunteers: 5,
         start_timestamp: new Date(`${nowYear}-01-22T11:00:00Z`),
-        end_timestamp: new Date(`${nowYear}-01-22T12:30:00Z`),
+        end_timestamp: new Date(`${nowYear}-01-23T12:30:00Z`),
         minimum_age: 18,
-        is_open: false,
+        automatic_acceptance: false,
+        is_closed: false,
       },
       {
         organization_id: orgByName.get('Org Three')!,
@@ -299,7 +353,8 @@ async function seed() {
         start_timestamp: new Date(`${nowYear}-01-24T09:30:00Z`),
         end_timestamp: new Date(`${nowYear}-01-24T13:30:00Z`),
         minimum_age: 18,
-        is_open: false,
+        automatic_acceptance: false,
+        is_closed: true,
       },
       {
         organization_id: orgByName.get('Org One')!,
@@ -312,7 +367,8 @@ async function seed() {
         start_timestamp: new Date(`${nowYear}-01-25T10:00:00Z`),
         end_timestamp: new Date(`${nowYear}-01-25T12:00:00Z`),
         minimum_age: 18,
-        is_open: true,
+        automatic_acceptance: true,
+        is_closed: true,
       },
     ])
     .returning(['id', 'title'])

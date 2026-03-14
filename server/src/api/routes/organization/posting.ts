@@ -41,7 +41,8 @@ const organizationPostingResponseColumns = [
   'organization_posting.start_timestamp',
   'organization_posting.end_timestamp',
   'organization_posting.minimum_age',
-  'organization_posting.is_open',
+  'organization_posting.automatic_acceptance',
+  'organization_posting.is_closed',
   'organization_posting.location_name',
   'organization_posting.created_at',
   'organization_posting.updated_at',
@@ -78,7 +79,8 @@ postingRouter.post('/', async (req, res: Response<OrganizationPostingCreateRespo
         start_timestamp: body.start_timestamp,
         end_timestamp: body.end_timestamp ?? undefined,
         minimum_age: body.minimum_age ?? undefined,
-        is_open: body.is_open ?? true,
+        automatic_acceptance: body.automatic_acceptance ?? true,
+        is_closed: body.is_closed ?? false,
         location_name: body.location_name,
       })
       .returning('id')
@@ -337,7 +339,8 @@ postingRouter.put('/:id', async (req, res: Response<OrganizationPostingUpdateRes
     if (body.start_timestamp !== undefined) postingFields.start_timestamp = body.start_timestamp;
     if (body.end_timestamp !== undefined) postingFields.end_timestamp = body.end_timestamp;
     if (body.minimum_age !== undefined) postingFields.minimum_age = body.minimum_age;
-    if (body.is_open !== undefined) postingFields.is_open = body.is_open;
+    if (body.automatic_acceptance !== undefined) postingFields.automatic_acceptance = body.automatic_acceptance;
+    if (body.is_closed !== undefined) postingFields.is_closed = body.is_closed;
     if (body.location_name !== undefined) postingFields.location_name = body.location_name;
 
     if (Object.keys(postingFields).length > 0) {
@@ -431,7 +434,7 @@ postingRouter.get('/:id/applications', async (req, res: Response<OrganizationPos
 
   const posting = await database
     .selectFrom('organization_posting')
-    .select(['id', 'is_open'])
+    .select(['id', 'automatic_acceptance'])
     .where('organization_posting.id', '=', postingId)
     .where('organization_posting.organization_id', '=', orgId)
     .executeTakeFirst();
@@ -441,7 +444,7 @@ postingRouter.get('/:id/applications', async (req, res: Response<OrganizationPos
     throw new Error('Posting not found');
   }
 
-  if (posting.is_open) {
+  if (posting.automatic_acceptance) {
     res.json({ applications: [] });
     return;
   }
@@ -498,7 +501,7 @@ postingRouter.post('/:id/applications/:applicationId/accept', async (req, res: R
 
   const posting = await database
     .selectFrom('organization_posting')
-    .select(['id', 'is_open'])
+    .select(['id', 'automatic_acceptance'])
     .where('organization_posting.id', '=', postingId)
     .where('organization_posting.organization_id', '=', orgId)
     .executeTakeFirst();
@@ -508,7 +511,7 @@ postingRouter.post('/:id/applications/:applicationId/accept', async (req, res: R
     throw new Error('Posting not found');
   }
 
-  if (posting.is_open) {
+  if (posting.automatic_acceptance) {
     res.status(400);
     throw new Error('Cannot accept applications for open postings');
   }
@@ -599,7 +602,7 @@ postingRouter.delete('/:id/applications/:applicationId', async (req, res: Respon
 
   const posting = await database
     .selectFrom('organization_posting')
-    .select(['id', 'is_open'])
+    .select(['id', 'automatic_acceptance'])
     .where('organization_posting.id', '=', postingId)
     .where('organization_posting.organization_id', '=', orgId)
     .executeTakeFirst();

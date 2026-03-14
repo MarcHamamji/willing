@@ -20,7 +20,8 @@ const organizationPostingResponseColumns = [
   'organization_posting.start_timestamp',
   'organization_posting.end_timestamp',
   'organization_posting.minimum_age',
-  'organization_posting.is_open',
+  'organization_posting.automatic_acceptance',
+  'organization_posting.is_closed',
   'organization_posting.location_name',
   'organization_posting.created_at',
   'organization_posting.updated_at',
@@ -77,7 +78,8 @@ volunteerPostingRouter.get('/', async (req, res: Response<VolunteerPostingSearch
       'organization_posting.organization_id',
     )
     .select(organizationPostingResponseColumns)
-    .select(['organization_account.name as organization_name']);
+    .select(['organization_account.name as organization_name'])
+    .where('organization_posting.is_closed', '=', false);
 
   if (skillFilter) {
     query = query.where(({ exists, selectFrom }) => exists(
@@ -309,7 +311,7 @@ volunteerPostingRouter.post('/:id/enroll', async (req, res: Response<VolunteerPo
   const [posting, volunteer] = await Promise.all([
     database
       .selectFrom('organization_posting')
-      .select(['id', 'is_open', 'minimum_age'])
+      .select(['id', 'automatic_acceptance', 'is_closed', 'minimum_age'])
       .where('id', '=', id)
       .executeTakeFirst(),
     database
@@ -322,6 +324,11 @@ volunteerPostingRouter.post('/:id/enroll', async (req, res: Response<VolunteerPo
   if (!posting) {
     res.status(404);
     throw new Error('Posting not found');
+  }
+
+  if (posting.is_closed) {
+    res.status(403);
+    throw new Error('This posting is closed and no longer accepting applications');
   }
 
   if (!volunteer) {
@@ -365,7 +372,7 @@ volunteerPostingRouter.post('/:id/enroll', async (req, res: Response<VolunteerPo
 
   let enrollment: Enrollment | EnrollmentApplication | undefined;
 
-  if (posting.is_open) {
+  if (posting.automatic_acceptance) {
     enrollment = await database
       .insertInto('enrollment')
       .values({
@@ -393,7 +400,7 @@ volunteerPostingRouter.post('/:id/enroll', async (req, res: Response<VolunteerPo
     throw new Error('Failed to create enrollment');
   }
 
-  res.json({ enrollment, isOpen: posting.is_open });
+  res.json({ enrollment, isOpen: posting.automatic_acceptance });
 });
 
 volunteerPostingRouter.delete('/:id/enroll', async (req, res: Response<VolunteerPostingWithdrawResponse>) => {
@@ -402,7 +409,7 @@ volunteerPostingRouter.delete('/:id/enroll', async (req, res: Response<Volunteer
 
   const posting = await database
     .selectFrom('organization_posting')
-    .select(['id', 'is_open'])
+    .select(['id', 'automatic_acceptance'])
     .where('id', '=', id)
     .executeTakeFirst();
 
@@ -424,7 +431,7 @@ volunteerPostingRouter.delete('/:id/enroll', async (req, res: Response<Volunteer
       .where('volunteer_id', '=', volunteerId)
       .where('posting_id', '=', id)
       .execute(),
-    !posting.is_open && database
+    !posting.automatic_acceptance && database
       .deleteFrom('enrollment_application')
       .where('volunteer_id', '=', volunteerId)
       .where('posting_id', '=', id)

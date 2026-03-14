@@ -26,7 +26,7 @@ export default function OrganizationPostingCreate() {
     mode: 'onTouched',
     reValidateMode: 'onChange',
     defaultValues: {
-      is_open: true,
+      automatic_acceptance: true,
     },
   });
 
@@ -52,7 +52,7 @@ export default function OrganizationPostingCreate() {
         end_timestamp: data.end_timestamp ? new Date(data.end_timestamp).toISOString() : undefined,
         max_volunteers: data.max_volunteers ? Number(data.max_volunteers) : undefined,
         minimum_age: data.minimum_age ? Number(data.minimum_age) : undefined,
-        is_open: data.is_open,
+        automatic_acceptance: data.automatic_acceptance,
         skills: skills.length > 0 ? skills : undefined,
       };
 
@@ -166,7 +166,7 @@ export default function OrganizationPostingCreate() {
 
                   <ToggleButton
                     form={form}
-                    name="is_open"
+                    name="automatic_acceptance"
                     label="Posting Type"
                     options={[
                       {
