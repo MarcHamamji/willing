@@ -181,6 +181,49 @@ async function seed() {
 
   const volByEmail = new Map(volunteers.map(v => [v.email, v.id]));
 
+  const crises = await database.insertInto('crisis')
+    .values([
+      {
+        name: 'Lebanon Flood Relief',
+        description: 'Coordinated response for families impacted by severe flooding. Focuses on distribution of supplies and shelter setup.',
+        pinned: true,
+      },
+      {
+        name: 'Medical Emergency Response',
+        description: 'Support medical teams in treating injured individuals from sudden disasters. Includes logistics, patient transport, and supply coordination.',
+        pinned: true,
+      },
+      {
+        name: 'Refugee Assistance Crisis',
+        description: 'Aid refugees arriving due to regional instability by helping with registration, shelter setup, and basic necessities distribution.',
+        pinned: false,
+      },
+      {
+        name: 'Earthquake Recovery Effort',
+        description: 'Large-scale recovery operation after a major earthquake. Volunteers support debris removal, shelter construction, and supply distribution.',
+        pinned: false,
+      },
+      {
+        name: 'Fire Evacuation Support',
+        description: 'Immediate support for people displaced by fires. Focuses on evacuation assistance, temporary shelter coordination, and supplies.',
+        pinned: false,
+      },
+      {
+        name: 'Power Outage Response',
+        description: 'Coordinate emergency power distribution and support vulnerable communities during widespread outages.',
+        pinned: false,
+      },
+      {
+        name: 'Marc Hamamji Mountain Rescue',
+        description: 'Specialized rescue mission to locate and extract a stranded hiker in dangerous mountainous terrain.',
+        pinned: false,
+      },
+    ])
+    .returning(['id', 'name'])
+    .execute();
+
+  const crisisByName = new Map(crises.map(c => [c.name, c.id]));
+
   const nowYear = 2026;
   const postings = await database.insertInto('organization_posting')
     .values([
@@ -327,6 +370,7 @@ async function seed() {
       // Crisis Postings - Urgent Emergency Response
       {
         organization_id: orgByName.get('Org One')!,
+        crisis_id: crisisByName.get('Lebanon Flood Relief')!,
         title: 'Flood Relief Distribution',
         description: 'URGENT: Distribute emergency supplies to families affected by recent flooding. Immediate response needed for food, water, and shelter materials.',
         latitude: 33.85,
@@ -341,6 +385,7 @@ async function seed() {
       },
       {
         organization_id: orgByName.get('Org Two')!,
+        crisis_id: crisisByName.get('Medical Emergency Response')!,
         title: 'Medical Emergency Response',
         description: 'CRISIS: Support medical teams in treating injured from building collapse. Assist with patient transport, supply distribution, and family coordination.',
         latitude: 33.35,
@@ -355,6 +400,7 @@ async function seed() {
       },
       {
         organization_id: orgByName.get('Org Three')!,
+        crisis_id: crisisByName.get('Refugee Assistance Crisis')!,
         title: 'Refugee Camp Support',
         description: 'EMERGENCY: Provide immediate assistance to newly arrived refugees. Help with registration, basic needs distribution, and emotional support.',
         latitude: 34.42,
@@ -369,6 +415,7 @@ async function seed() {
       },
       {
         organization_id: orgByName.get('Org One')!,
+        crisis_id: crisisByName.get('Earthquake Recovery Effort')!,
         title: 'Earthquake Aftermath Aid',
         description: 'DISASTER RESPONSE: Clear debris, provide temporary shelter, and distribute emergency rations to earthquake survivors. Heavy lifting required.',
         latitude: 33.92,
@@ -383,6 +430,7 @@ async function seed() {
       },
       {
         organization_id: orgByName.get('Org Two')!,
+        crisis_id: crisisByName.get('Fire Evacuation Support')!,
         title: 'Fire Evacuation Support',
         description: 'URGENT FIRE RESPONSE: Assist families evacuated from apartment fire. Provide temporary housing coordination and basic needs support.',
         latitude: 33.38,
@@ -397,6 +445,7 @@ async function seed() {
       },
       {
         organization_id: orgByName.get('Org Three')!,
+        crisis_id: crisisByName.get('Power Outage Response')!,
         title: 'Power Outage Emergency Aid',
         description: 'CRISIS: Widespread power outage affecting vulnerable populations. Deliver generators, batteries, and coordinate emergency communication.',
         latitude: 34.45,
@@ -412,6 +461,7 @@ async function seed() {
       // Special Crisis: Ethical Rescue Operation
       {
         organization_id: orgByName.get('Org One')!,
+        crisis_id: crisisByName.get('Marc Hamamji Mountain Rescue')!,
         title: 'Marc Hamamji Rescue Operation',
         description: 'URGENT RESCUE: Marc Hamamji is trapped in a remote mountain area after a hiking accident. Professional rescue team needed for immediate extraction from dangerous terrain. Specialized climbing and medical skills required.',
         latitude: 34.25,

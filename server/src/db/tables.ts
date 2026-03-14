@@ -237,6 +237,7 @@ export const organizationPostingSchema = zod.object({
   minimum_age: zod.number().optional(),
   automatic_acceptance: zod.boolean().default(true),
   is_closed: zod.boolean().default(false),
+  crisis_id: zod.number().optional(),
   location_name: zod.string().min(2, 'Location must be longer than 2 characters'),
   opportunity_vector: zod.string().optional(),
   posting_context_vector: zod.string().optional(),
