@@ -115,7 +115,7 @@ organizationRouter.get('/:id', async (req, res: Response<OrganizationProfileResp
   let orgId;
   try {
     orgId = zod.object({
-      id: zod.string().regex(/^\d+$/, 'Organization ID must be a number').transform(Number),
+      id: zod.coerce.number(),
     }).parse(req.params).id;
   } catch (_error: unknown) {
     next();

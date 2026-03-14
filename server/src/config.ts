@@ -3,55 +3,54 @@ import zod from 'zod';
 
 dotenv.config();
 
+const optionalInDev = <T>(schema: zod.ZodType<T>): zod.ZodType<T> =>
+  zod.preprocess(val => (val === '' ? undefined : val), schema);
+
 const schema = zod.object({
   NODE_ENV: zod.enum(['development', 'production']).default('development'),
 
-  POSTGRES_HOST: zod.string().nonempty(),
-  POSTGRES_DB: zod.string().nonempty(),
-  POSTGRES_USER: zod.string().nonempty(),
-  POSTGRES_PASSWORD: zod.string().nonempty(),
-  POSTGRES_PORT: zod.string().regex(/^[0-9]+$/).nonempty().transform(s => Number(s)),
+  POSTGRES_HOST: zod.string().min(1),
+  POSTGRES_DB: zod.string().min(1),
+  POSTGRES_USER: zod.string().min(1),
+  POSTGRES_PASSWORD: zod.string().min(1),
+  POSTGRES_PORT: zod.coerce.number(),
 
-  SERVER_PORT: zod.string().regex(/[0-9]+/).nonempty().transform(s => Number(s)),
+  SERVER_PORT: zod.string().regex(/[0-9]+/),
   CLIENT_URL: zod.url().refine(url => !url.endsWith('/'), {
-    error: 'The client url should not end with a trailing slash',
+    message: 'The client url should not end with a trailing slash',
   }),
 
-  JWT_SECRET: zod.string().nonempty(),
-  OPENAI_API_KEY: zod.preprocess(v => (v === '' ? undefined : v), zod.string().nonempty().optional()),
+  JWT_SECRET: zod.string().min(1),
 
-  SMTP_HOST: zod.preprocess(v => (v === '' ? undefined : v), zod.string().nonempty().optional()),
-  SMTP_PORT: zod
-    .preprocess(v => (v === '' ? undefined : v), zod.string().regex(/^[0-9]+$/).optional())
-    .transform(s => (s === undefined ? undefined : Number(s))),
-  SMTP_USER: zod.preprocess(v => (v === '' ? undefined : v), zod.string().nonempty().optional()),
-  SMTP_PASS: zod.preprocess(v => (v === '' ? undefined : v), zod.string().nonempty().optional()),
-  MAIL_FROM: zod.preprocess(v => (v === '' ? undefined : v), zod.string().nonempty().optional()),
+  OPENAI_API_KEY: optionalInDev(zod.string().optional()),
+  SMTP_HOST: optionalInDev(zod.string().optional()),
+  SMTP_PORT: optionalInDev(zod.coerce.number().optional()),
+  SMTP_USER: optionalInDev(zod.string().optional()),
+  SMTP_PASS: optionalInDev(zod.string().optional()),
+  MAIL_FROM: optionalInDev(zod.string().optional()),
 
-  LOCATION_IQ_API_KEY: zod.preprocess(v => (v === '' ? undefined : v), zod.string().nonempty().optional()),
-  CV_UPLOAD_DIR: zod.string().nonempty(),
-}).superRefine((values, ctx) => {
-  if (values.NODE_ENV === 'development') return;
+  LOCATION_IQ_API_KEY: optionalInDev(zod.string().optional()),
+  CV_UPLOAD_DIR: zod.string().min(1),
+})
+  .superRefine((values, ctx) => {
+    if (values.NODE_ENV === 'development') return;
 
-  const required = [
-    'SMTP_HOST',
-    'SMTP_PORT',
-    'SMTP_USER',
-    'SMTP_PASS',
-    'MAIL_FROM',
-    'LOCATION_IQ_API_KEY',
-  ] as const;
+    const prodRequired: (keyof typeof values)[] = [
+      'SMTP_HOST', 'SMTP_PORT', 'SMTP_USER', 'SMTP_PASS', 'MAIL_FROM', 'LOCATION_IQ_API_KEY',
+    ];
 
-  for (const key of required) {
-    if (values[key] === undefined) {
-      ctx.addIssue({
-        code: 'custom',
-        path: [key],
-        message: `${key} is required when NODE_ENV is not development`,
-      });
-    }
-  }
-});
+    prodRequired.forEach((key) => {
+      if (!values[key]) {
+        ctx.addIssue({
+          code: 'invalid_type',
+          path: [key],
+          expected: 'string',
+          received: 'undefined',
+          message: `${key} is required in production`,
+        });
+      }
+    });
+  });
 
 const config = schema.parse(process.env);
 
