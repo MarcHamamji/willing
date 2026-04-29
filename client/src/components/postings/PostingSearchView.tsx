@@ -1,5 +1,5 @@
 import { TextSearch, ClipboardList, Building2, AlertTriangle, type LucideIcon } from 'lucide-react';
-import { type ReactNode, useCallback, useEffect, useMemo, useState } from 'react';
+import { type ReactNode, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useLocation, useSearchParams } from 'react-router-dom';
 
 import {
@@ -402,27 +402,18 @@ function PostingSearchView({
     await fetchPostings(filters);
   }, [fetchPostings, activeEntity, storageKey]);
 
-  // When switching the active entity (tabs), auto-fetch results so the
-  // loading state appears immediately instead of showing an empty screen.
+  const hasFetchedRef = useRef(false);
+
   useEffect(() => {
-    let cancelled = false;
-    const doFetch = async () => {
-      // If we already have results for the selected entity, skip fetching.
-      if (postings.length > 0 || organizations.length > 0 || crises.length > 0) return;
+    hasFetchedRef.current = false;
+  }, [activeEntity, storageKey]);
 
-      try {
-        await fetchPostings(activeFilters);
-      } catch {
-        if (cancelled) return;
-      }
-    };
+  useEffect(() => {
+    if (hasFetchedRef.current) return;
+    hasFetchedRef.current = true;
 
-    void doFetch();
-
-    return () => {
-      cancelled = true;
-    };
-  }, [activeEntity, storageKey, fetchPostings, activeFilters, postings.length, organizations.length, crises.length]);
+    void fetchPostings(activeFilters);
+  }, [activeEntity, storageKey, fetchPostings, activeFilters]);
 
   const setEntityInUrl = useCallback((entity: PostingSearchFilters['entity']) => {
     const nextParams = new URLSearchParams(searchParams);
